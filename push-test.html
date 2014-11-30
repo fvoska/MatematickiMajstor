@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="//cdn.socket.io/socket.io-1.2.1.js"></script>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript">
+        // Prvo se spojimo na server preko socketa (TCP)
+        var socket = io.connect('localhost:8080');
+
+        // Osluškujemo na događaj serverTimeTick kojeg nam šalje server (push od strane servera)
+        socket.on('serverTimeTick', function (data) {
+            // U konzolu ispišemo promljene podatke
+            console.log(JSON.parse(data));
+
+            // Vraćamo serveru naše vrijeme (push od naše strane)
+            var now = new Date();
+            var jsonDate = now.toJSON();
+            socket.emit('clientEvent', JSON.stringify({ clientTime: jsonDate, userAgent: navigator.userAgent }));
+        });
+    </script>
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>

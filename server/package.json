@@ -1,0 +1,9 @@
+{
+  "name": "majstor-server",
+  "description": "Matematički Majstor",
+  "version": "0.0.1",
+  "author": "Filip Voska",
+  "dependencies": {
+    "socket.io": "latest"
+  }
+}
