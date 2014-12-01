@@ -17,7 +17,7 @@
 
 
 		socket.on('updaterooms', function (rooms, current_room) {
-			$('#rooms').empty();
+			//$('#rooms').empty();
 			$.each(rooms, function(key, value) {
 				if(value == current_room){
 					$('#rooms').append('<div>' + value + '</div>');

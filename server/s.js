@@ -19,12 +19,12 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('create', function(room) {
         rooms.push(room);
-        socket.emit('updaterooms', rooms, socket.room);
+        io.sockets.emit('updaterooms', rooms, socket.room);
+        //socket.emit('updaterooms', rooms, socket.room);
     });
 
     socket.on('sendchat', function(data) {
         io.sockets["in"](socket.room).emit('updatechat', socket.username, data);
-        console.log(socket.rooms.length);
     });
 
     socket.on('switchRoom', function(newroom) {
