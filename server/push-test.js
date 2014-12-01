@@ -1,16 +1,15 @@
-// Slušamo na portu 8080
+// Listen on port 8080.
 var io = require('socket.io').listen(8080);
 var clients = [];
 
-// Micanje elementa iz polja
+// Removal of items from Array.
 Array.prototype.remove = function(from, to) {
     var rest = this.slice((to || from) + 1 || this.length);
     this.length = from < 0 ? this.length + from : from;
     return this.push.apply(this, rest);
 };
 
-// Kada se klijent spoji, dobijemo socket.
-// Za više klijenata zgodno spremiti njihove sockete u neko polje.
+// Get socket on client connection.
 io.sockets.on('connection', function (socket) {
     // Dodaj klijentov socket u polje.
     clients.push(socket);
@@ -35,11 +34,14 @@ io.sockets.on('connection', function (socket) {
 // Svakih 2s šaljemo klijentima serverTimeTick event na koji klijenti odgovaraju svojim vremenom i user agentom
 setInterval(function(){
     console.log("\nSending serverTime to " + clients.length + " clients...");
-    var i;
+    /*var i;
     for (i = 0; i < clients.length; i++)
     {
         var now = new Date();
         var jsonDate = now.toJSON();
         clients[i].emit('serverTimeTick', JSON.stringify({ serverTime: jsonDate }));
-    }
+    }*/
+    var now = new Date();
+    var jsonDate = now.toJSON();
+    io.emit('serverTimeTick', JSON.stringify({ serverTime: jsonDate }));
 }, 5000);
