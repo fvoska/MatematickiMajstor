@@ -11,16 +11,14 @@
             socket.emit('addUser', prompt("What's your name: "));
         });
 
-        socket.on('updatChat', function (username, data) {
+        socket.on('updateChat', function (username, data) {
             $('#conversation').append('<b>'+ username + ':</b> ' + data + '<br>');
         });
-
 
         socket.on('updateRooms', function (rooms, current_room) {
             $('#rooms').empty();
             $.each(rooms, function(key, value) {
                 var roomJSON = JSON.parse(value);
-                console.log(roomJSON);
                 if (roomJSON != null) {
                     if (roomJSON.roomName == current_room) {
                         $('#rooms').append('<div>' + roomJSON.roomName + '</div>');
@@ -79,7 +77,6 @@
                 socket.emit('switchRoom', name);
             });
         });
-
     </script>
     <title></title>
 </head>
