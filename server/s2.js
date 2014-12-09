@@ -1,10 +1,15 @@
 var io = require('socket.io').listen(8081);
-var redis = require('socket.io-redis');
-io.adapter(redis({ host: 'localhost', port: 6379 }));
+var redisSockets = require('socket.io-redis');
+io.adapter(redisSockets({ host: 'localhost', port: 6379 }));
 
 var usernames = {};
 
-var rooms = ['Lobby'];
+var rooms = { "rooms": ["Lobby"]};
+
+var redisRooms = require("redis");
+var client = redisRooms.createClient(6379, "localhost");
+
+client.set("rooms", JSON.stringify(rooms));
 
 io.sockets.on('connection', function(socket) {
     socket.on('adduser', function(username) {
@@ -14,13 +19,19 @@ io.sockets.on('connection', function(socket) {
         socket.join('Lobby');
         socket.emit('updatechat', 'SERVER', 'you have connected to Lobby');
         socket.broadcast.to('Lobby').emit('updatechat', 'SERVER', username + ' has connected to this room');
-        socket.emit('updaterooms', rooms, 'Lobby');
+        client.get("rooms", function (err, reply) {
+            rooms = JSON.parse(reply);
+        });
+        socket.emit('updaterooms', JSON.stringify(rooms), 'Lobby');
     });
 
     socket.on('create', function(room) {
-        rooms.push(room);
-        io.sockets.emit('updaterooms', rooms, socket.room);
-        //socket.emit('updaterooms', rooms, socket.room);
+        client.get("rooms", function (err, reply) {
+            rooms = JSON.parse(reply);
+        });
+        rooms["rooms"].push(room);
+        client.set("rooms", JSON.stringify(rooms));
+        io.sockets.emit('updaterooms', JSON.stringify(rooms), socket.room);
     });
 
     socket.on('sendchat', function(data) {
@@ -36,7 +47,10 @@ io.sockets.on('connection', function(socket) {
         socket.broadcast.to(oldroom).emit('updatechat', 'SERVER', socket.username + ' has left this room');
         socket.room = newroom;
         socket.broadcast.to(newroom).emit('updatechat', 'SERVER', socket.username + ' has joined this room');
-        socket.emit('updaterooms', rooms, newroom);
+        client.get("rooms", function (err, reply) {
+            rooms = JSON.parse(reply);
+        });
+        socket.emit('updaterooms', JSON.stringify(rooms), newroom);
     });
 
     socket.on('disconnect', function() {
