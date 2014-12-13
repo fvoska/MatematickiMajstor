@@ -38,7 +38,7 @@ do
     /* Ista priča sa .random() kao i gore, treba provjeriti da nije nasumično generirana gornja granica jer smo onda out of bounds */
     indexOpeartora = this.Random(0, this.Operatori.length);
     if (indexOpeartora == this.Operatori.length) indexOpeartora = this.Operatori.length - 1;
-    if ($.inArray(this.Operatori[indexOpeartora], this.DozvoljeniOperatori) > -1) break; // Provjera je li operator u listi dozvoljenih
+    if (this.DozvoljeniOperatori.indexOf(this.Operatori[indexOpeartora]) != -1) break; // Provjera je li operator u listi dozvoljenih
 }
 while (true);
 this.IzrazArray.push(this.Operatori[indexOpeartora]); // Ubacimo generirani operator

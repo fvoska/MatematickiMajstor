@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <script src="//cdn.socket.io/socket.io-1.2.1.js"></script>
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript">
+        var socket = io.connect('127.0.0.1:8080');
+
+        socket.on('connect', function(){
+            socket.emit('addUser', prompt("What's your name: "));
+        });
+
+        socket.on('updatChat', function (username, data) {
+            $('#conversation').append('<b>'+ username + ':</b> ' + data + '<br>');
+        });
+
+
+        socket.on('updateRooms', function (rooms, current_room) {
+            $('#rooms').empty();
+            $.each(rooms, function(key, value) {
+                var roomJSON = JSON.parse(value);
+                console.log(roomJSON);
+                if (roomJSON != null) {
+                    if (roomJSON.roomName == current_room) {
+                        $('#rooms').append('<div>' + roomJSON.roomName + '</div>');
+                    }
+                    else {
+                        $('#rooms').append('<div><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
+                    }
+                }
+            });
+        });
+
+        var correctAnswer;
+        var myBegin;
+
+        socket.on('task', function(task) {
+            var taskJSON = JSON.parse(task);
+            $('#conversation').append('<b>TASK:</b> ' + taskJSON.task + '<br>');
+            correctAnswer = taskJSON.result;
+            myBegin = new Date().getTime();
+        });
+
+        function switchRoom(room){
+            socket.emit('switchRoom', room);
+        }
+
+        $(function(){
+            $('#datasend').click( function() {
+                var message = $('#data').val();
+                $('#data').val('');
+                socket.emit('sendchat', message);
+            });
+
+            $('#answersend').click( function() {
+                var message = $('#data').val();
+                $('#data').val('');
+                var myEnd = new Date().getTime();
+                var result = "F";
+                console.log(message + " " + correctAnswer)
+                if (message == correctAnswer)
+                {
+                    result = "T";
+                }
+                socket.emit('taskAnswered', result, (myEnd - myBegin) / 1000);
+            });
+
+            $('#data').keypress(function(e) {
+                if(e.which == 13) {
+                    $(this).blur();
+                    $('#datasend').focus().click();
+                }
+            });
+
+            $('#roombutton').click(function(){
+                var name = $('#roomname').val();
+                $('#roomname').val('');
+                socket.emit('switchRoom', name);
+            });
+        });
+
+    </script>
+    <title></title>
+</head>
+<body>
+<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
+    <b>ROOMS</b>
+    <div><a href="#" onclick="switchRoom('Lobby')">Lobby</a></div>
+    <div id="rooms"></div>
+</div>
+
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+    <div id="conversation"></div>
+    <input id="data" style="width:200px;" />
+    <input type="button" id="datasend" value="send" />
+    <input type="button" id="answersend" value="answer" />
+</div>
+
+<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
+    <div id="room creation"></div>
+    <input id="roomname" style="width:200px;" />
+    <input type="button" id="roombutton" value="create room" />
+</div>
+</body>
+</html>
