@@ -94,9 +94,13 @@ io.sockets.on('connection', function(socket) {
             // Notify others of joining.
             socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
 
+            /*
+            // Don't update rooms if player is in a room other than lobby - no need.
             if (newRoomStripped == "Lobby") {
                 socket.emit('updateRooms', updateRooms(), newRoomStripped);
             }
+            */
+            socket.emit('updateRooms', updateRooms(), newRoomStripped);
         }
         else {
             socket.emit('roomFull');

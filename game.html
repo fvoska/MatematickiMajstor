@@ -5,50 +5,125 @@
     <script src="//cdn.socket.io/socket.io-1.2.1.js"></script>
     <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript">
-        var socket = io.connect('127.0.0.1:8080');
+        var correctAnswer;
+        var myBegin;
 
+        // Sockets section, handles events from server.
+        var socket = io.connect('127.0.0.1:8080'); //
+        // Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
+
+        // On socket conenction.
         socket.on('connect', function(){
-            socket.emit('addUser', prompt("What's your name: "));
+            // Add user and prompt for name.
+            socket.emit('addUser', prompt("What's your name: "), 2);
+            // Once we have DB in place we will use username from DB instead of a prompt.
         });
 
+        // Chat update
         socket.on('updateChat', function (username, data) {
+            // Append message to HTML.
             $('#conversation').append('<b>'+ username + ':</b> ' + data + '<br>');
         });
 
+        // Update room list.
         socket.on('updateRooms', function (rooms, current_room) {
+            /*
+            rooms variable structure: array of JSONs
+            [{"roomName": "room1", "numberOfUsers": 3}, {"roomName": "room2", "numberOfUsers": 1},...]
+            */
+            // We always receive list of all room, so empty HTML before adding rooms.
             $('#rooms').empty();
             $.each(rooms, function(key, value) {
+                // value is JSON string, parse it into JSON object.
                 var roomJSON = JSON.parse(value);
+
+                // If there are no rooms except Lobby this will be null.
                 if (roomJSON != null) {
                     if (roomJSON.roomName == current_room) {
+                        // Don't allow users to join room they are already in.
                         $('#rooms').append('<div>' + roomJSON.roomName + '</div>');
                     }
                     else {
+                        // Create link with onlick function that switches rooms.
                         $('#rooms').append('<div><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                     }
                 }
             });
         });
 
-        var correctAnswer;
-        var myBegin;
-
+        // Received new task
         socket.on('task', function(task) {
+            /* task structure: JSON
+            {
+                "task": "2 + 2",
+                "result": "4",
+                "suggestions": ["1", "2", "3"] <- this isn't yet implemented in server, will be soon.
+            }
+            */
+
+            // Parse JSON.
             var taskJSON = JSON.parse(task);
-            $('#conversation').append('<b>TASK:</b> ' + taskJSON.task + '<br>');
+
+            // Show task on webpage.
+            $('#task').html(taskJSON.task);
+
+            // Add correct answer to suggestions array.
+            var suggestionsArray = [];
+            suggestionsArray.push(taskJSON.result);
+
+            // Add suggestions to suggestions array.
+            for (var i = 0; i < 3; i++)
+            {
+                suggestionsArray.push(i);
+                //suggestionsArray.push(taskJSON.suggestions[i]);
+            }
+
+            // Shuffle suggestions.
+            suggestionsArray = shuffle(suggestionsArray);
+
+            // Show suggestions in "boxes" on webpage.
+            for (var i = 1; i <= 4; i++)
+            {
+                $('#suggestion' + i).html(suggestionsArray[i-1]);
+            }
+
+            // Remember correct answer.
             correctAnswer = taskJSON.result;
+
+            // Start timer.
             myBegin = new Date().getTime();
         });
 
+        function shuffle(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex ;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+        }
+
+        // Join other room. It will create new room if it doesn't exits.
         function switchRoom(room){
             socket.emit('switchRoom', room);
         }
 
+        // This section handles button clicks.
         $(function(){
             $('#datasend').click( function() {
                 var message = $('#data').val();
                 $('#data').val('');
-                socket.emit('sendchat', message);
+                socket.emit('sendChat', message);
             });
 
             $('#answersend').click( function() {
@@ -76,6 +151,25 @@
                 $('#roomname').val('');
                 socket.emit('switchRoom', name);
             });
+
+            // Handle clicks on 4 suggestion boxes.
+            $('.suggestion').click(function() {
+                // Get suggestion value.
+                var chosenSuggestion = $(this).html();
+
+                // Check if it's correct or not.
+                var result = "F";
+                if (chosenSuggestion == correctAnswer)
+                {
+                    result = "T";
+                }
+
+                // Stop timer.
+                var myEnd = new Date().getTime();
+
+                // Send to server to register answer.
+                socket.emit('taskAnswered', result, (myEnd - myBegin) / 1000);
+            });
         });
     </script>
     <title></title>
@@ -98,6 +192,14 @@
     <div id="room creation"></div>
     <input id="roomname" style="width:200px;" />
     <input type="button" id="roombutton" value="create room" />
+</div>
+<div>
+    <!-- Just for testing for now - make nice-looking boxes in design and then change -->
+    <div id="task"></div>
+    <div id="suggestion1" class="suggestion"></div>
+    <div id="suggestion2" class="suggestion"></div>
+    <div id="suggestion3" class="suggestion"></div>
+    <div id="suggestion4" class="suggestion"></div>
 </div>
 </body>
 </html>
