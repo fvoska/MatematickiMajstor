@@ -1,0 +1,269 @@
+var correctAnswer;
+var myBegin;
+var myUsername;
+var playersList = [];
+
+// Sockets section, handles events from server.
+var socket = io.connect("127.0.0.1:8080"); //
+// Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
+
+// On socket conenction.
+socket.on("connect", function(){
+    // Add user and prompt for name.
+    // Once we have DB in place we will use username from DB instead of a prompt.
+    myUsername = prompt("What's your name: ");
+    playersList.push(myUsername);
+    socket.emit("addUser", myUsername);
+});
+
+// Chat update
+socket.on("updateChat", function (username, data) {
+    // Append message to HTML.
+    $("#conversation").append('<div class="chatItem"><b>'+ username + ':</b> ' + data + '</div>');
+});
+
+// Update room list.
+socket.on("updateRooms", function (rooms, current_room) {
+    /*
+     rooms variable structure: array of JSONs
+     [{"roomName": "room1", "numberOfUsers": 3}, {"roomName": "room2", "numberOfUsers": 1},...]
+     */
+    // We always receive list of all room, so empty HTML before adding rooms.
+    $("#rooms").empty();
+    $.each(rooms, function(key, value) {
+        // value is JSON string, parse it into JSON object.
+        var roomJSON = JSON.parse(value);
+
+        // If there are no rooms except Lobby this will be null.
+        if (roomJSON != null) {
+            if (roomJSON.roomName == current_room) {
+                // Don't allow users to join room they are already in.
+                $("#rooms").append('<div class="roomItem">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</div>');
+            }
+            else {
+                // Create link with onlick function that switches rooms.
+                $("#rooms").append('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
+            }
+        }
+    });
+});
+
+// Received new task
+socket.on("task", function(task) {
+    /* task structure: JSON
+     {
+     "task": "2 + 2",
+     "result": "4",
+     "suggestions": ["1", "2", "3"] <- this isn't yet implemented in server, will be soon.
+     }
+     */
+
+    // Enable buttons.
+    $(".suggestion").prop("disabled", false);
+    $(".suggestion").css({"background-color": "#337ab7"});
+
+    // Reset user list colors.
+    $(".player").css({"color": "#337ab7"});
+
+    // Parse JSON.
+    var taskJSON = JSON.parse(task);
+
+    // Show task on webpage.
+    $("#task").animate({"opacity": "0"}, 250, null, function() {
+        $("#task").html(taskJSON.task);
+        $("#task").animate({"opacity": "1"}, 250);
+    });
+
+    // Add correct answer to suggestions array.
+    var suggestionsArray = [];
+    suggestionsArray.push(taskJSON.result);
+
+    // Add suggestions to suggestions array.
+    for (var i = 0; i < 3; i++) {
+        suggestionsArray.push(i);
+        //suggestionsArray.push(taskJSON.suggestions[i]);
+    }
+
+    // Shuffle suggestions.
+    suggestionsArray = shuffle(suggestionsArray);
+
+    // Show suggestions in "boxes" on webpage.
+
+    $(".suggestion").animate({"opacity": "0"}, 250, null, function() {
+        for (var i = 1; i <= 4; i++) {
+            $("#suggestion" + i).html(suggestionsArray[i-1]);
+        }
+        $(".suggestion").animate({"opacity": "1"}, 250);
+    });
+
+    // Remember correct answer.
+    correctAnswer = taskJSON.result;
+
+    // Start timer.
+    myBegin = new Date().getTime();
+});
+
+// Round results.
+socket.on("roundResults", function(fastestPlayer, fastestTime, over) {
+    if (fastestPlayer == null) {
+        // Noone answered correctly in time.
+    }
+    else {
+        $(".progress-bar").each(function() {
+            var userTemp = $(this);
+            if (userTemp.html() == fastestPlayer)
+            {
+                // Increase progress bar for fastest player.
+                var progress = parseInt(userTemp.attr('aria-valuenow')) + 25;
+                userTemp.css('width', progress+'%').attr('aria-valuenow', progress);
+            }
+        });
+    }
+});
+
+// New user in room notification.
+socket.on("updateUsers", function(users) {
+    // Store list locally.
+    playersList = users;
+
+    // Clear DOM.
+    $("#players").empty();
+    $("#progressContainer").empty();
+
+    // Insert each player in DOM.
+    for (var i = 0; i < playersList.length; i++) {
+        $("#players").append('<div class="player" id="player' + i + '">' + playersList[i] + '</div>');
+        $("#progressContainer").append('<div class="progress">' +
+                                           '<div id="progress' + i + '" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;">' + playersList[i] + '</div>' +
+                                       '</div>');
+    }
+});
+
+// Feedback from other player answers.
+socket.on("someoneAnswered", function(user, result, time) {
+    // Find element of that player
+    $(".player").each(function() {
+        var userTemp = $(this);
+        if (userTemp.html() == user)
+        {
+            // Color it according to wrong/right answer.
+            if (result == "T") {
+                userTemp.css({"color": "green"});
+            }
+            else if (result == "F") {
+                userTemp.css({"color": "red"});
+            }
+        }
+    });
+});
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex ;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+// Join other room. It will create new room if it doesn't exits.
+function switchRoom(room){
+    $("#players").empty();
+    socket.emit('switchRoom', room);
+    if ($("#middleContainer").css("margin-top") != "0px") {
+        $("#roomCreation").fadeOut(250, function() {
+            $("#middleContainer").css({"margin": "0px", "width": "100%"});
+            $("#roomPlay").fadeIn(250);
+        });
+
+        $("#roomsHeader").slideUp(300, function() {$("#playersHeader").slideDown(300);});
+        $("#chatHeaderLobby").slideUp(300, function() {$("#chatHeaderGame").slideDown(300);});
+
+        $("#rooms").slideUp(250);
+        setTimeout(function() {$("#players").slideDown();}, 125);
+        setTimeout(function() {$("#leaveRoom").slideDown(500);}, 250);
+    }
+    else {
+        $("#roomPlay").fadeOut(250, function() {
+            $("#middleContainer").css({"margin": "auto", "margin-top": "240px", "width": "350px"});
+            $("#roomCreation").fadeIn(250);
+        });
+
+        $("#playersHeader").slideUp(300, function() {$("#roomsHeader").slideDown(300);});
+        $("#chatHeaderGame").slideUp(300, function() {$("#chatHeaderLobby").slideDown(300);});
+
+        $("#rooms").slideDown(250);
+        setTimeout(function() {$("#players").slideUp();}, 125);
+        setTimeout(function() {$("#leaveRoom").slideUp(500);}, 250);
+    }
+}
+
+// This section handles button clicks.
+$(function(){
+    // Send chat message on button click.
+    $('#chatSend').click( function() {
+        var message = $('#chatData').val();
+        $('#chatData').val('');
+        socket.emit('sendChat', message);
+    });
+
+    // Send chat message on enter.
+    $('#chatData').keypress(function(e) {
+        if(e.which == 13) {
+            $(this).blur();
+            $('#chatSend').focus().click();
+        }
+    });
+
+    // Join room
+    $("#joinRoom").click(function(){
+        var name = $('#roomName').val();
+        $('#roomName').val('');
+        switchRoom(name);
+    });
+
+    // Leave room.
+    $("#leaveRoom").click(function(){
+        switchRoom("Lobby");
+    });
+
+    // Handle clicks on 4 suggestion boxes.
+    $(".suggestion").click(function() {
+        // Disable clicked button.
+        $(this).prop('disabled', true);
+
+        // Get suggestion value.
+        var chosenSuggestion = $(this).html();
+
+        // Check if it's correct or not.
+        var result = "F";
+        if (chosenSuggestion == correctAnswer) {
+            result = "T";
+            $(".suggestion").not(this).css({"background-color": "grey"});
+            $(this).css({"background-color": "green"});
+            $(".suggestion").prop('disabled', true);
+        }
+        else {
+            // Punish by 5 seconds. !!! Or it would maybe be better to just disable further answering.
+            myBegin -= 5000;
+            $(this).css({"background-color": "red"});
+        }
+
+        // Stop timer.
+        var myEnd = new Date().getTime();
+
+        // Send to server to register answer.
+        if ((myEnd - myBegin) != null)
+            socket.emit('taskAnswered', result, (myEnd - myBegin) / 1000);
+    });
+});

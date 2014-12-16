@@ -1,0 +1,132 @@
+body {
+    /*font-family: 'Patrick Hand', cursive;*/
+    font-family: 'Courgette', cursive;
+}
+
+#mainContainer {
+    margin: auto;
+    padding: 10px;
+    padding-top: 20px;
+    width: 1300px;
+    height: 600px;
+    margin-top: 25px;
+}
+
+#panelLeftContainer {
+    position: relative;
+    float:left;
+    left: 20px;
+    text-align: center;
+    width: 200px;
+    height: 550px;
+    padding: 10px;
+}
+
+#panelCenterContainer {
+    position: relative;
+    float: left;
+    left: 35px;
+    width: 700px;
+    height: 550px;
+}
+
+#middleContainer {
+    width: 350px;
+    position: relative;
+    margin: auto;
+    margin-top: 240px;
+}
+
+#panelRightContainer {
+    position: relative;
+    float: left;
+    left: 50px;
+    text-align: center;
+    width: 300px;
+    height: 550px;
+    padding: 10px;
+}
+
+.panel-heading {
+    height: 35px;
+}
+
+#roomScroller {
+    overflow: scroll;
+    height: 490px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.roomItem {
+    padding: 5px;
+    margin: 5px;
+}
+
+.chatItem {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    color: white;
+    background-color: #337ab7;
+    text-align: left;
+}
+
+#leaveRoom {
+    display: none;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#players {
+    display: none;
+    color: #337ab7;
+}
+
+.player {
+    padding: 5px;
+    margin: 5px;
+}
+
+#roomPlay {
+    display: none;
+    text-align: center;
+    margin: 5px;
+    height: 540px;
+    background-color: #CCC;
+}
+
+#progressContainer {
+    width: 100%;
+    height: 180px;
+}
+
+.progress {
+    height: 30px;
+    font-size: 20px;
+}
+
+.progress-bar {
+    font-size: 20px;
+    line-height: 30px;
+}
+
+#task {
+    color: #337ab7;
+    font-size: 600%;
+    margin: 40px 0 40px 0;
+    opacity: 0;
+}
+
+#suggestionsContainer {
+    width: 100%;
+}
+
+.suggestion {
+    margin: 0 25px 0 25px;
+    width: 100px;
+    height: 100px;
+    font-size: 300%;
+    opacity: 0;
+}

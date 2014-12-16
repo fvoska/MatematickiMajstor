@@ -93,6 +93,9 @@ io.sockets.on('connection', function(socket) {
 
             // Notify others of joining.
             socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
+            var usersList = findUsernamesByRoomId(newRoom)
+            socket.broadcast.to(newRoom).emit("updateUsers", usersList);
+            socket.emit("updateUsers", usersList);
 
             /*
             // Don't update rooms if player is in a room other than lobby - no need.
@@ -157,11 +160,11 @@ http.listen(portGame, function() {
 });
 
 function checkRoundResults(roomId) {
+    // TODO: this needs to be refactored. Maybe use multi for redis
     var numAnswered = 0;
     var usernames = findUsernamesByRoomId(roomId);
     var fastestPlayer = null;
     var fastestTime = 20;
-    // izađe van funkcija, a callback tek kasnije dođe - dodati username u json
     for (var user in usernames)
     {
         redisGameClient.get(usernames[user], function (err, reply) {
@@ -215,28 +218,35 @@ function checkRoundResults(roomId) {
                             }
                         }
 
-                        var over = false;
                         redisGameClient.get(fastestPlayer, function (err, reply) {
+                            var over = false;
                             var playerStatusJSON = JSON.parse(reply);
                             if (playerStatusJSON.won == 3) {
                                 over = true;
                             }
-                        });
 
-                        // Let clients know who won the round.
-                        io.sockets["in"](roomId).emit('roundResults', fastestPlayer, fastestTime, over);
-                        if (fastestPlayer != null) {
-                            if (over) {
-                                console.log("Game winner: " + fastestPlayer + "(" + fastestTime + ")");
+                            // Let clients know who won the round.
+                            io.sockets["in"](roomId).emit('roundResults', fastestPlayer, fastestTime, over);
+                            if (fastestPlayer != null) {
+                                if (over) {
+                                    console.log("Game winner: " + fastestPlayer + "(" + fastestTime + ")");
+                                }
+                                else {
+                                    // TODO: this isn't working because of delayed redis calls.
+                                    console.log("Round winner: " + fastestPlayer + "(" + fastestTime + ")");
+                                }
                             }
                             else {
-                                console.log("Round winner: " + fastestPlayer + "(" + fastestTime + ")");
+                                console.log("Noone answered correctly in time");
                             }
-                        }
-                        else {
-                            console.log("Noone answered correctly in time");
-                        }
 
+                            // Send new tasks if game isn't over yet.
+                            if (!over) {
+                                setTimeout(function() {
+                                    sendTask(roomId);
+                                }, 3000);
+                            }
+                        });
                         return true;
                     }
                     else return false;
