@@ -1,6 +1,10 @@
 body {
-    /*font-family: 'Patrick Hand', cursive;*/
+    /*font-family: 'Patrick Hand', cursive;
     font-family: 'Courgette', cursive;
+    font-family: 'Sacramento', cursive;
+    font-family: 'Marck Script', cursive;*/
+    font-family: 'Open Sans', sans-serif;
+    /*font-family: 'Open Sans Condensed', sans-serif;*/
 }
 
 #mainContainer {

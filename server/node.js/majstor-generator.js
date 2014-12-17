@@ -108,7 +108,7 @@ exports.getSuggestions = function() {
 
         while (suggestions.length < 4) {
             var broj = generatorInstance.Random(diffMin, diffMax + 1);
-            if (broj != rezultat) {
+            if (broj != rezultat && suggestions.indexOf(broj) == -1) {
                 suggestions.push(broj);
             }
         }

@@ -1,10 +1,11 @@
 var correctAnswer;
 var myBegin;
 var myUsername;
+//var roomName;
 var playersList = [];
 
 // Sockets section, handles events from server.
-var socket = io.connect("127.0.0.1:8080"); //
+var socket = io.connect("127.0.0.1:8080");
 // Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
 
 // On socket conenction.
@@ -125,6 +126,7 @@ socket.on("roundResults", function(fastestPlayer, fastestTime, over) {
 socket.on("updateUsers", function(users) {
     // Store list locally.
     playersList = users;
+    console.log(playersList);
 
     // Clear DOM.
     $("#players").empty();
@@ -181,6 +183,11 @@ function switchRoom(room){
     $("#players").empty();
     socket.emit('switchRoom', room);
     if ($("#middleContainer").css("margin-top") != "0px") {
+        // Go to Lobby.
+        $("#progressContainer").empty();
+        $("#task").animate({"opacity": "0"}, 250);
+        $(".suggestion").animate({"opacity": "0"}, 250);
+
         $("#roomCreation").fadeOut(250, function() {
             $("#middleContainer").css({"margin": "0px", "width": "100%"});
             $("#roomPlay").fadeIn(250);
@@ -194,12 +201,14 @@ function switchRoom(room){
         setTimeout(function() {$("#leaveRoom").slideDown(500);}, 250);
     }
     else {
+        // Go to game.
         $("#roomPlay").fadeOut(250, function() {
             $("#middleContainer").css({"margin": "auto", "margin-top": "240px", "width": "350px"});
             $("#roomCreation").fadeIn(250);
         });
 
         $("#playersHeader").slideUp(300, function() {$("#roomsHeader").slideDown(300);});
+        $("#chatHeaderGame").html(room);
         $("#chatHeaderGame").slideUp(300, function() {$("#chatHeaderLobby").slideDown(300);});
 
         $("#rooms").slideDown(250);

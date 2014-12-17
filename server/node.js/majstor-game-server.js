@@ -1,3 +1,5 @@
+// TODO: Don't send JSON, send things through socket emit parameters when data is simple.
+
 // Game controller port.
 var portGame = process.env.PORT || 8080;
 
@@ -38,10 +40,6 @@ var io = require('socket.io')(http);
 var redisSockets = require('socket.io-redis');
 io.adapter(redisSockets({ host: hostRedisSockets, port: portRedisSockets }));
 
-// Distribute temporary game results
-var redisGame = require("redis");
-var redisGameClient = redisGame.createClient(portRedisSockets, hostRedisSockets);
-
 // Configure socket events.
 io.sockets.on('connection', function(socket) {
     // Add user to Lobby.
@@ -50,8 +48,9 @@ io.sockets.on('connection', function(socket) {
         socket.username = username;
         socket.room = 'Lobby';
         socket.join('Lobby');
-        var playerStatusJSON = JSON.parse("{\"user\":\"" + socket.username + "\",\"won\":0,\"time\":0,\"status\":\"N\"}");
-        redisGameClient.set(socket.username, JSON.stringify(playerStatusJSON));
+        socket.won = 0;
+        socket.answerTime = -1;
+        socket.answerStatus = "N";
 
         // Notify others that user has joined the Lobby.
         socket.emit('updateChat', 'SERVER', 'you have connected to Lobby');
@@ -87,23 +86,16 @@ io.sockets.on('connection', function(socket) {
             socket.emit('updateChat', 'SERVER', 'you have connected to ' + newRoomStripped);
             socket.broadcast.to(oldRoom).emit('updateChat', 'SERVER', socket.username + ' has left this room');
 
-            // Return rooms to everyone.
+            // Return rooms to Lobby.
             socket.broadcast.to(oldRoom).emit('updateRooms', updateRooms(), null);
             socket.room = newRoom;
 
             // Notify others of joining.
             socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
-            var usersList = findUsernamesByRoomId(newRoom)
+
+            var usersList = findUsernamesByRoomId(newRoom);
             socket.broadcast.to(newRoom).emit("updateUsers", usersList);
             socket.emit("updateUsers", usersList);
-
-            /*
-            // Don't update rooms if player is in a room other than lobby - no need.
-            if (newRoomStripped == "Lobby") {
-                socket.emit('updateRooms', updateRooms(), newRoomStripped);
-            }
-            */
-            socket.emit('updateRooms', updateRooms(), newRoomStripped);
         }
         else {
             socket.emit('roomFull');
@@ -113,34 +105,30 @@ io.sockets.on('connection', function(socket) {
         clientsInRoom = findClientsSocketByRoomId(newRoom).length;
         if (clientsInRoom == 4) {
             // Start game.
-            sendTask(newRoom);
+            setTimeout(function() {
+                sendTask(newRoom);
+            }, 1000);
 
             // Repeatedly check if everyone answered (every 2 sec).
-            var myTimer = setInterval(function() {
+            /*var myTimer = setInterval(function() {
                 var roundOver = checkRoundResults(socket.room);
                 if (roundOver) clearInterval(myTimer);
-            }, 2000);
+            }, 2000);*/
         }
     });
 
     socket.on('taskAnswered', function(result, time) {
         // Update current user answer time.
-        redisGameClient.get(socket.username, function (err, reply) {
-            // FORMAT: { "user": "u", "won": 2, "time": 4, "status": "T" }
-            var playerStatusJSON = JSON.parse(reply);
-            // Reply is null when the key is missing.
-            if (reply == null) {
-                playerStatusJSON = JSON.parse("{\"user\":\"" + socket.username + "\"\"won\":0,\"time\":0,\"status\":\"N\"}");
-            }
-            playerStatusJSON.time = time;
-            playerStatusJSON.status = result;
+        socket.answerStatus = result;
+        socket.answerTime = time;
 
-            redisGameClient.set(socket.username, JSON.stringify(playerStatusJSON));
-
-            console.log("[" + socket.room + "] " + socket.username + " answered " + playerStatusJSON.status + " in " + playerStatusJSON.time + "s");
-        });
-
+        // Let others know
         io.sockets["in"](socket.room).emit('someoneAnswered', socket.username, result, time);
+
+        // Write to console.
+        console.log("[" + socket.room + "] " + socket.username + " answered " + result + " in " + time + "s");
+
+        checkRoundResults(socket.room);
     });
 
     // Disconnect user.
@@ -161,98 +149,51 @@ http.listen(portGame, function() {
 
 function checkRoundResults(roomId) {
     // TODO: this needs to be refactored. Maybe use multi for redis
-    var numAnswered = 0;
-    var usernames = findUsernamesByRoomId(roomId);
+    var players = findClientsSocketByRoomId(roomId);
+
     var fastestPlayer = null;
-    var fastestTime = 20;
-    for (var user in usernames)
-    {
-        redisGameClient.get(usernames[user], function (err, reply) {
-            var usernames = findUsernamesByRoomId(roomId);
-            var playerStatusJSON = JSON.parse(reply);
-            // Reply is null when the key is missing.
-            if (reply != null) {
-                var user = playerStatusJSON.user;
-                if (playerStatusJSON.time > 0) {
-                    numAnswered++;
-                    if (playerStatusJSON.status == "T" && playerStatusJSON.time < fastestTime) {
-                        fastestTime = playerStatusJSON.time;
-                        fastestPlayer = user;
-                    }
-                    if (numAnswered == 4) {
-                        // Everyone answered!
-                        console.log("[" + roomId + "] Everyone has answered");
+    var timeLimit = 20;
+    var fastestTime = timeLimit; // This is maximum time allowed for solving - 20s
+    var numAnswered = 0;
 
-                        // Update round winner.
-                        if (fastestPlayer != null) {
-                            // Someone was fastest, update his won counter.
-                            redisGameClient.get(fastestPlayer, function (err, reply) {
-                                var playerStatusJSON = JSON.parse(reply);
-                                playerStatusJSON.won += 1;
-                                playerStatusJSON.time = 0;
-                                playerStatusJSON.status = "N";
-                                redisGameClient.set(fastestPlayer, JSON.stringify(playerStatusJSON));
-                            });
+    for (var i in players) {
+        var player = players[i];
+        var time = player.answerTime;
+        var status = player.answerStatus;
+        if (status != "N") {
+            numAnswered++;
+        }
+        if (status == "T" && time < fastestTime) {
+            fastestTime = time;
+            fastestPlayer = player;
+        }
+    }
 
-                            // Reset all times and statuses
-                            for (var u in usernames) {
-                                if (usernames[u] != fastestPlayer) {
-                                    redisGameClient.get(usernames[u], function (err, reply) {
-                                        var playerStatusJSON = JSON.parse(reply);
-                                        playerStatusJSON.time = 0;
-                                        playerStatusJSON.status = "N";
-                                        redisGameClient.set(playerStatusJSON.user, JSON.stringify(playerStatusJSON));
-                                    });
-                                }
-                            }
-                        }
-                        else {
-                            // Noone answered correctly - reset time and status.
-                            for (var u in usernames) {
-                                redisGameClient.get(usernames[u], function (err, reply) {
-                                    var playerStatusJSON = JSON.parse(reply);
-                                    playerStatusJSON.time = 0;
-                                    playerStatusJSON.status = "N";
-                                    redisGameClient.set(playerStatusJSON.user, JSON.stringify(playerStatusJSON));
-                                });
-                            }
-                        }
-
-                        redisGameClient.get(fastestPlayer, function (err, reply) {
-                            var over = false;
-                            var playerStatusJSON = JSON.parse(reply);
-                            if (playerStatusJSON.won == 3) {
-                                over = true;
-                            }
-
-                            // Let clients know who won the round.
-                            io.sockets["in"](roomId).emit('roundResults', fastestPlayer, fastestTime, over);
-                            if (fastestPlayer != null) {
-                                if (over) {
-                                    console.log("Game winner: " + fastestPlayer + "(" + fastestTime + ")");
-                                }
-                                else {
-                                    // TODO: this isn't working because of delayed redis calls.
-                                    console.log("Round winner: " + fastestPlayer + "(" + fastestTime + ")");
-                                }
-                            }
-                            else {
-                                console.log("Noone answered correctly in time");
-                            }
-
-                            // Send new tasks if game isn't over yet.
-                            if (!over) {
-                                setTimeout(function() {
-                                    sendTask(roomId);
-                                }, 3000);
-                            }
-                        });
-                        return true;
-                    }
-                    else return false;
-                }
+    if (numAnswered == 4) {
+        var over = false;
+        if (fastestPlayer != null) {
+            // Round winner.
+            console.log(fastestPlayer.username + " won the round with time " + fastestTime + "s");
+            fastestPlayer.won += 1;
+            if (fastestPlayer.won == 3) {
+                // Game winner as well.
+                console.log(fastestPlayer.username + " won the game");
+                over = true;
             }
-        });
+
+            io.sockets["in"](roomId).emit('roundResults', fastestPlayer.username, fastestTime, over);
+        }
+        else {
+            // Noone answered in time.
+            console.log("Noone answered faster than " + timeLimit + "s");
+            io.sockets["in"](roomId).emit('roundResults', null, -1, false);
+        }
+
+        if (!over) {
+            setTimeout(function () {
+                sendTask(roomId);
+            }, 1000);
+        }
     }
 }
 
@@ -290,12 +231,25 @@ function findUsernamesByRoomId(roomId) {
 }
 
 function sendTask(toRoom) {
+    // Clear players' time and status.
+    var players = findClientsSocketByRoomId(toRoom);
+    for (var i in players) {
+        var player = players[i];
+        player.answerTime = -1;
+        player.answerStatus = "N";
+    }
+
+    // Generate a task with suggestions.
     generator.create(2, ['+', '-', '*']);
     var task = generator.getTask();
     var result = generator.getResult();
     var suggestions = generator.getSuggestions();
+
+    // Construct JSON with task, result and suggestions.
     var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null}";
     taskJSON = JSON.parse(taskJSON);
     taskJSON.suggestions = suggestions;
+
+    // Send to sockets.
     io.sockets["in"](toRoom).emit('task', JSON.stringify(taskJSON));
 }
