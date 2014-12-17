@@ -80,8 +80,8 @@ socket.on("task", function(task) {
 
     // Add suggestions to suggestions array.
     for (var i = 0; i < 3; i++) {
-        suggestionsArray.push(i);
-        //suggestionsArray.push(taskJSON.suggestions[i]);
+        //suggestionsArray.push(i);
+        suggestionsArray.push(taskJSON.suggestions[i]);
     }
 
     // Shuffle suggestions.
@@ -222,6 +222,14 @@ $(function(){
         if(e.which == 13) {
             $(this).blur();
             $('#chatSend').focus().click();
+        }
+    });
+
+    // Join room on enter.
+    $('#roomName').keypress(function(e) {
+        if(e.which == 13) {
+            $(this).blur();
+            $('#joinRoom').focus().click();
         }
     });
 

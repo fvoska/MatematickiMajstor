@@ -73,21 +73,47 @@ Generator.prototype.ProvjeraRezultata = function(unesenRezultat) {
 
 var generatorInstance = null;
 
-exports.create = function(numbersCount, operators)
-{
+exports.create = function(numbersCount, operators) {
     generatorInstance = new Generator(numbersCount, operators);
 }
 
-exports.getTask = function()
-{
+exports.getTask = function() {
     if (generatorInstance != null)
         return generatorInstance.IzrazArray;
     else return null;
 }
 
-exports.getResult = function()
-{
+exports.getResult = function() {
     if (generatorInstance != null)
         return generatorInstance.Rezultat;
+    else return null;
+}
+
+exports.getSuggestions = function() {
+    if (generatorInstance != null) {
+        var rezultat = parseInt(generatorInstance.Rezultat);
+        var offset = 10;
+        var diffMin = rezultat - offset;
+        var diffMax = rezultat + offset;
+
+        if (diffMin < 0) {
+            diffMin = 0;
+        }
+
+        if (diffMax > 99) {
+            diffMax = 99;
+        }
+
+        var suggestions = [];
+
+        while (suggestions.length < 4) {
+            var broj = generatorInstance.Random(diffMin, diffMax + 1);
+            if (broj != rezultat) {
+                suggestions.push(broj);
+            }
+        }
+
+        return suggestions;
+    }
     else return null;
 }

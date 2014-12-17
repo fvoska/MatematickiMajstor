@@ -43,32 +43,27 @@
             <!-- Create room -->
             <div class="panel panel-default login" id="roomCreation">
                 <div class="panel-body">
-                    <form class="form-inline" role="form">
-                        <div class="form-group">
-                            <div class="input-group">
-                                <label class="sr-only" for="roomName">Ime sobe</label>
-                                <input class="form-control" id="roomName" placeholder="Upiši ime sobe" maxlength="16">
-                            </div>
-                        </div>
-                        <button type="button" id="joinRoom" class="btn btn-primary">Napravi sobu</button>
-                    </form>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="roomName" maxlength="16" placeholder="Upiši ime sobe">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" id="joinRoom">Napravi sobu</button>
+                        </span>
+                    </div>
                 </div>
             </div>
 
             <!-- Play area -->
             <div class="panel panel-default login" id="roomPlay">
                 <div class="panel-body">
-                    <form class="form-inline" role="form">
-                        <div id="progressContainer">
-                        </div>
-                        <div id="task">98 + 1</div>
-                        <div id="suggestionsContainer">
-                            <button type="button" id="suggestion1" class="btn btn-primary suggestion">1</button>
-                            <button type="button" id="suggestion2" class="btn btn-primary suggestion">2</button>
-                            <button type="button" id="suggestion3" class="btn btn-primary suggestion">3</button>
-                            <button type="button" id="suggestion4" class="btn btn-primary suggestion">99</button>
-                        </div>
-                    </form>
+                    <div id="progressContainer">
+                    </div>
+                    <div id="task">98 + 1</div>
+                    <div id="suggestionsContainer">
+                        <button type="button" id="suggestion1" class="btn btn-primary suggestion">1</button>
+                        <button type="button" id="suggestion2" class="btn btn-primary suggestion">2</button>
+                        <button type="button" id="suggestion3" class="btn btn-primary suggestion">3</button>
+                        <button type="button" id="suggestion4" class="btn btn-primary suggestion">99</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -80,14 +75,12 @@
             <h3 class="panel-title"><span id="chatHeaderLobby">RAZGOVOR (SVI)</span><span id="chatHeaderGame" style="display: none;">RAZGOVOR (IGRA)</span></h3>
         </div>
         <br>
-        <div>
-            <div class="input-group">
-                <input type="text" class="form-control" id="chatData">
-                <span class="input-group-btn">
-                    <button class="btn btn-primary" type="button" id="chatSend">Pošalji</button>
-                </span>
-            </div><!-- /input-group -->
-        </div><!-- /.col-lg-6 -->
+        <div class="input-group">
+            <input type="text" class="form-control" id="chatData" placeholder="Upiši poruku">
+            <span class="input-group-btn">
+                <button class="btn btn-primary" type="button" id="chatSend">Pošalji</button>
+            </span>
+        </div>
         <br>
 
         <div id="conversation"></div>

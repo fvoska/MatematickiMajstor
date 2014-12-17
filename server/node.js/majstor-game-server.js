@@ -293,6 +293,9 @@ function sendTask(toRoom) {
     generator.create(2, ['+', '-', '*']);
     var task = generator.getTask();
     var result = generator.getResult();
-    var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\"}"
-    io.sockets["in"](toRoom).emit('task', taskJSON);
+    var suggestions = generator.getSuggestions();
+    var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null}";
+    taskJSON = JSON.parse(taskJSON);
+    taskJSON.suggestions = suggestions;
+    io.sockets["in"](toRoom).emit('task', JSON.stringify(taskJSON));
 }
