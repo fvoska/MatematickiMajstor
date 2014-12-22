@@ -24,18 +24,18 @@
 	<div class="login-container" style="width:350px; margin:auto">
 		<div class="panel panel-primary login">
 			<div class="panel-body">
-                    <h2 style="margin-top:0x;">Prijava</h2>
+                    <h2 style="margin-top:0x;">Login</h2>
 				
 					<div class="form-group">
-						<label for="korisničkoIme"><b>Korisničko ime</b></label>
-						<input type="text" class="form-control" id="korisničkoIme" name="userName" placeholder="Upišite korisničko ime" />
+						<label for="korisničkoIme"><b>Username</b></label>
+						<input type="text" class="form-control" id="korisničkoIme" name="userName" placeholder="Enter your username" />
 					</div>	
 					<div class="form-group">
-						<label for="lozinka"><b>Lozinka</b></label>
-						<input type="password" class="form-control" id="šifra" name="pass" placeholder="Upišite lozinku" />
+						<label for="lozinka"><b>Password</b></label>
+						<input type="password" class="form-control" id="šifra" name="pass" placeholder="Enter your password" />
 					</div>
 					<br>
-					<input type="submit" class="btn btn-primary" value="Prijava" />
+					<input type="submit" class="btn btn-primary" value="Login" />
 			</div>
 		</div>
 	</div>
