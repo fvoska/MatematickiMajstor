@@ -211,8 +211,8 @@ function updateRooms() {
 }
 
 function findClientsSocketByRoomId(roomId) {
-    var res = []
-        , room = io.sockets.adapter.rooms[roomId];
+    var res = [];
+    var room = io.sockets.adapter.rooms[roomId];
     if (room) {
         for (var id in room) {
             res.push(io.sockets.adapter.nsp.connected[id]);

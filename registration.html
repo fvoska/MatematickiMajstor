@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head lang="hr">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/majstor-style.css">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700,400">
+    
+
+    <script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/registrationValidation.js"></script>
+    
+    <title>Math Master - Registration</title>
+</head>
+<body>
+<div id="mainContainer">
+	<form action="#" id="registrationForm" name="regForm" method="POST" onSubmit="return checkForm(this)" novalidate>
+	<div class="login-container" style="width:350px; margin:auto">
+		<div class="panel panel-primary login">
+			<div class="panel-body">
+				<h2>Registration</h2>
+
+				<div class="form-group">
+					<label for="username"><b>Username</b></label>
+					<input type="text" class="form-control" id="username" name="username" placeholder="Enter username" />
+				</div>
+				<div class="form-group">
+					<label for="password"><b>Password</b></label>
+					<input type="password" class="form-control" id="password" name="password" placeholder="Enter password" />
+				</div>
+				<div class="form-group">
+					<label for="passwordConfirm"><b>Confirm password</b></label>
+					<input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" placeholder="Re-enter password" />
+				</div>
+				<div class="form-group">
+					<label for="email"><b>E-mail</b></label>
+					<input type="email" class="form-control" id="email" name="email" placeholder="Enter e-mail" />
+				</div>
+				<br>
+				<input type="submit" class="btn btn-primary" value="Submit registration" />
+
+				<br>
+				<br>
+				<div>Already registered? <a href="login.html">Login here</a>.</div>
+			</div>
+		</div>
+	</div>
+	</form>
+</div>
+</body>
+</html>
+ 

@@ -6,56 +6,7 @@
     <meta charset="UTF-8">
     <script src="//cdn.socket.io/socket.io-1.2.1.js"></script>
     <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript">
-        var socket = io.connect('127.0.0.1:8080');
 
-        socket.on('connect', function(){
-            socket.emit('adduser', prompt("What's your name: "));
-        });
-
-        socket.on('updatechat', function (username, data) {
-            $('#conversation').append('<b>'+ username + ':</b> ' + data + '<br>');
-        });
-
-
-        socket.on('updaterooms', function (rooms, current_room) {
-            $('#rooms').empty();
-            $.each(rooms, function(key, value) {
-                if(value == current_room){
-                    $('#rooms').append('<div>' + value + '</div>');
-                }
-                else {
-                    $('#rooms').append('<div><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
-                }
-            });
-        });
-
-        function switchRoom(room){
-            socket.emit('switchRoom', room);
-        }
-
-        $(function(){
-            $('#datasend').click( function() {
-                var message = $('#data').val();
-                $('#data').val('');
-                socket.emit('sendchat', message);
-            });
-
-            $('#data').keypress(function(e) {
-                if(e.which == 13) {
-                    $(this).blur();
-                    $('#datasend').focus().click();
-                }
-            });
-
-            $('#roombutton').click(function(){
-                var name = $('#roomname').val();
-                $('#roomname').val('');
-                socket.emit('switchRoom', name);
-            });
-        });
-
-    </script>
     <title></title>
 </head>
 <body>
@@ -85,12 +36,12 @@
 	</div>
 </div>
 </div>
-<div class="panel panel-primary" style="position: relative; float:left; left:50px; width:200px; height:550px;padding:10px;">    
+<div class="panel panel-primary" style="position: relative; float:left; left:50px; width:200px; height:550px;padding:10px;">
 	<div class="panel-heading">
     <center><h3 class="panel-title">RAZGOVOR</h3></center>
 	</div>
 	<br>
-	<div> 
+	<div>
     <div class="input-group">
      <input type="text" class="form-control" id="data">
       <span class="input-group-btn">

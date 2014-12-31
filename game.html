@@ -5,28 +5,23 @@
 
     <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/majstor-style.css">
-    <!--<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Patrick+Hand">
-    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Courgette">
-    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Sacramento">
-    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Marck+Script">-->
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700,400">
-    <!--<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300">-->
 
     <script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
     <script type="application/javascript" src="//cdn.socket.io/socket.io-1.2.1.js"></script>
     <script type="application/javascript" src="js/majstor-client.js"></script>
-    <title>Matematički Majstor</title>
+
+    <title>Math Master</title>
 </head>
 <body>
 <div id="mainContainer">
-
     <!-- List of rooms -->
     <div class="panel panel-primary" id="panelLeftContainer">
-        <button type="button" id="leaveRoom" class="btn btn-primary">Napusti sobu</button>
+        <button type="button" id="leaveRoom" class="btn btn-primary">Leave game</button>
 
         <div class="panel-heading">
-            <h3 class="panel-title"><span id="roomsHeader">Sobe</span><span id="playersHeader" style="display: none;">Igrači</span></h3>
+            <h3 class="panel-title"><span id="roomsHeader">Available games</span><span id="playersHeader" style="display: none;">Players</span></h3>
         </div>
 
         <div id="roomScroller">
@@ -48,9 +43,9 @@
             <div class="panel panel-default login" id="roomCreation">
                 <div class="panel-body">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="roomName" maxlength="16" placeholder="Upiši ime sobe">
+                        <input type="text" class="form-control" id="roomName" maxlength="16" placeholder="Enter game name">
                         <span class="input-group-btn">
-                            <button class="btn btn-primary" type="button" id="joinRoom">Napravi sobu</button>
+                            <button class="btn btn-primary" type="button" id="joinRoom">Create game</button>
                         </span>
                     </div>
                 </div>
@@ -76,13 +71,13 @@
     <!-- Conversation -->
     <div class="panel panel-primary" id="panelRightContainer">
         <div class="panel-heading">
-            <h3 class="panel-title"><span id="chatHeaderLobby">Predvorje</span><span id="chatHeaderGame" style="display: none;">Ime Sobe</span></h3>
+            <h3 class="panel-title"><span id="chatHeaderLobby">Lobby</span><span id="chatHeaderGame" style="display: none;">Ime Sobe</span></h3>
         </div>
         <br>
         <div class="input-group">
-            <input type="text" class="form-control" id="chatData" placeholder="Upiši poruku">
+            <input type="text" class="form-control" id="chatData" placeholder="Enter message">
             <span class="input-group-btn">
-                <button class="btn btn-primary" type="button" id="chatSend">Pošalji</button>
+                <button class="btn btn-primary" type="button" id="chatSend">Send</button>
             </span>
         </div>
         <br>
