@@ -1,23 +1,30 @@
 <?php
-// Ulaz je $_POST['username'], $_POST['password']
+
+// Expected parameters: $_POST['username'], $_POST['password'].
+if (!isset($_POST['username']) || !isset($_POST['password'])) {
+	echo 'wrong';
+	exit;
+}
+
 session_start();
-include 'spajanje_baze.php';
+include 'db_connection.php';
 
-$provjeraKorisnika=mysql_query("SELECT person.username, person.password, person.id FROM person WHERE person.username = '".$_POST['username']."';");
+$userRow=mysql_query("SELECT person.username, person.password, person.id FROM person WHERE person.username = '".$_POST['username']."';");
 
-while ($row = mysql_fetch_assoc($provjeraKorisnika)){
-		// Trebalo bi prije provjere onda još hashati.
-		//$hashPassworda=password_hash($_POST['password'], PASSWORD_DEFAULT);
-		// Iz nekog razloga password_hash vraća svaki put drugačiju vrijednost
-		// Privremeno stavljeno na MD5
-		$hashPassworda=md5($_POST['password']);
-		if ($row['password'] == $hashPassworda) {
-			echo 'Uspješno ulogiran!';
+$numRows = mysql_num_rows($userRow);
+if ($numRows == 0) {
+	echo 'wrong';
+}
+
+while ($row = mysql_fetch_assoc($userRow)){
+		$passwordHash=md5($_POST['password']);
+		if ($row['password'] == $passwordHash) {
+			echo 'ok';
 			$_SESSION['id'] = $row['id'];
 			$_SESSION['username'] = $_POST['username'];
 		}
 		else {
-			echo 'Neispravna kombinacija korisničkog imena/lozinke';
+			echo 'wrong';
 		}
 		break;
 }

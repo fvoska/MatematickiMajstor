@@ -1,4 +1,5 @@
 <?php
+
 //ulaz je JSON s poljem userId i roomId i metoda POST
 //izlaz JSON : { "status" : "roomDeleted"/"personDeleted"}; ako je roomDeleted onda je brisanje pokrenula zadnja osoba iz sobe pa smo izbrisali i sobu, a ako je personDeleted onda smo samo izbrisali osobu, a soba jos postoji
 if (is_ajax()) {
@@ -30,7 +31,5 @@ if (is_ajax()) {
 	
 	echo json_encode($returnValue);
 }
-
-
 
 ?>

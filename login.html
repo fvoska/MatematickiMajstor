@@ -10,6 +10,7 @@
     <script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
     <script type="application/javascript" src="js/loginValidation.js"></script>
+    <script type="application/javascript" src="js/customAlert.js"></script>
 
     <title>Math Master - Login</title>
 </head>
@@ -19,22 +20,30 @@
 	<div class="login-container" style="width:350px; margin:auto">
 		<div class="panel panel-primary login">
 			<div class="panel-body">
-                <h2>Login</h2>
-
-                <div class="form-group">
-                    <label for="username"><b>Username</b></label>
-                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" />
+                <div id="logout-container-slider" style="display:none;">
+                    <h3>You are logged in as</h3>
+                    <h1 id="logged-username"></h1>
+                    <a href="#" onclick="logout();">Log out an log in again.</a>
                 </div>
-                <div class="form-group">
-                    <label for="password"><b>Password</b></label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" />
-                </div>
-                <br>
-                <input type="submit" class="btn btn-primary" value="Login" />
 
-                <br>
-                <br>
-                <div>Not registered? <a href="registration.html">Create your account here</a>.</div>
+                <div id="login-container-slider" style="display:none;">
+                    <h2>Log in</h2>
+
+                    <div class="form-group">
+                        <label for="username"><b>Username</b></label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password"><b>Password</b></label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" />
+                    </div>
+                    <br>
+                    <input type="submit" class="btn btn-primary" value="Login" />
+
+                    <br>
+                    <br>
+                    <div>Not registered? <a href="registration.html">Create your account here</a>.</div>
+                </div>
 			</div>
 		</div>
 	</div>
