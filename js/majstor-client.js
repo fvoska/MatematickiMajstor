@@ -9,7 +9,7 @@ var socket = io.connect("127.0.0.1:8080");
 // Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
 
 // On socket conenction.
-socket.on("connect", function(){
+socket.on("connect", function() {
     // Add user and prompt for name.
     // Once we have DB in place we will use username from DB instead of a prompt.
     myUsername = prompt("What's your name: ");
@@ -179,7 +179,7 @@ function shuffle(array) {
 }
 
 // Join other room. It will create new room if it doesn't exits.
-function switchRoom(room){
+function switchRoom(room) {
     $("#players").empty();
     socket.emit('switchRoom', room);
     if ($("#middleContainer").css("margin-top") != "0px") {
@@ -218,7 +218,7 @@ function switchRoom(room){
 }
 
 // This section handles button clicks.
-$(function(){
+$(function() {
     // Send chat message on button click.
     $('#chatSend').click( function() {
         var message = $('#chatData').val();
@@ -243,14 +243,14 @@ $(function(){
     });
 
     // Join room
-    $("#joinRoom").click(function(){
+    $("#joinRoom").click(function() {
         var name = $('#roomName').val();
         $('#roomName').val('');
         switchRoom(name);
     });
 
     // Leave room.
-    $("#leaveRoom").click(function(){
+    $("#leaveRoom").click(function() {
         switchRoom("Lobby");
     });
 

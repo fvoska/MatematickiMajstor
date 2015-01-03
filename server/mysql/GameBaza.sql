@@ -29,9 +29,9 @@ SET time_zone = "+00:00";
 CREATE TABLE IF NOT EXISTS `person` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(30) NOT NULL,
-  `password` varchar(35) NOT NULL COMMENT 'tu ide hash lozinke',
+  `password` varchar(35) NOT NULL COMMENT 'md5 password hash',
   `mail` varchar(40) NOT NULL,
-  `total` int(11) NOT NULL COMMENT 'broj odigranih',
+  `total` int(11) NOT NULL COMMENT 'games player',
   `victories` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
