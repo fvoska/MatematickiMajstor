@@ -89,6 +89,12 @@ body {
     overflow-y: auto;
 }
 
+#conenction-alert {
+    position: absolute;
+    width: 100%;
+    z-index: 2;
+}
+
 #gradientChat {
     position:absolute;
     z-index:2;

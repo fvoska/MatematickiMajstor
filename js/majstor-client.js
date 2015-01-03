@@ -1,7 +1,7 @@
 var correctAnswer;
 var myBegin;
 var myUsername;
-//var roomName;
+var currentRoom = "Lobby";
 var playersList = [];
 var socket;
 var URLSessionTest = "http://localhost/MatematickiMajstor/server/php/test_session.php";
@@ -22,6 +22,20 @@ $(document).ready(function() {
             socket = io.connect("127.0.0.1:8080");
             // Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
 
+            // Fired upon a connection error.
+            socket.io.on("connect_error", function(err) {
+                console.log("connect_error");
+                $("#conenction-alert").slideDown();
+                switchRoom("Lobby");
+            });
+
+            // Fired upon a successful reconnection.
+            socket.io.on("reconnect", function(numAttempt) {
+                console.log("reconnect");
+                $("#conenction-alert").slideUp();
+                switchRoom("Lobby");
+            });
+
             // On socket conenction.
             socket.on("connect", function() {
                 // Add user and prompt for name.
@@ -29,6 +43,7 @@ $(document).ready(function() {
                 //myUsername = prompt("What's your name: ");
                 playersList.push(myUsername);
                 socket.emit("addUser", myUsername);
+                $("#conenction-alert").slideUp();
             });
 
             // Chat update
@@ -180,6 +195,7 @@ $(document).ready(function() {
     });
 });
 
+
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex ;
 
@@ -201,6 +217,8 @@ function shuffle(array) {
 
 // Join other room. It will create new room if it doesn't exits.
 function switchRoom(room) {
+    if (currentRoom == room) return;
+    currentRoom = room;
     $("#players").empty();
     socket.emit('switchRoom', room);
     if ($("#middleContainer").css("margin-top") != "0px") {

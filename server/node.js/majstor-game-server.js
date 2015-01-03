@@ -177,11 +177,11 @@ function checkRoundResults(roomId) {
         var over = false;
         if (fastestPlayer != null) {
             // Round winner.
-            console.log(fastestPlayer.username + " won the round with time " + fastestTime + "s");
+            console.log("[" + roomId + "] " + fastestPlayer.username + " won the round with time " + fastestTime + "s");
             fastestPlayer.won += 1;
             if (fastestPlayer.won == 3) {
                 // Game winner as well.
-                console.log(fastestPlayer.username + " won the game");
+                console.log("[" + roomId + "] " + fastestPlayer.username + " won the game");
                 over = true;
             }
 
@@ -196,7 +196,7 @@ function checkRoundResults(roomId) {
         }
         else {
             // Noone answered in time.
-            console.log("Noone answered faster than " + timeLimit + "s");
+            console.log("[" + roomId + "] " + "Noone answered faster than " + timeLimit + "s");
             io.sockets["in"](roomId).emit('roundResults', null, -1, false);
         }
 
