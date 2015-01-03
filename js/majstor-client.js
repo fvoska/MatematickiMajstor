@@ -15,7 +15,8 @@ $(document).ready(function() {
         }
         else {
             // Get username.
-            myUsername = data;
+            myUsername = data + Date.now().toString(); // Timestamp for testing with same username.
+            //myUsername = data; // Use this for production.
 
             // Sockets section, handles events from server.
             socket = io.connect("127.0.0.1:8080");
@@ -33,7 +34,7 @@ $(document).ready(function() {
             // Chat update
             socket.on("updateChat", function (username, data) {
                 // Append message to HTML.
-                $("#conversation").append('<div class="chatItem"><b>'+ username + ':</b> ' + data + '</div>');
+                $("#conversation").prepend('<div class="chatItem"><b>'+ username + ':</b> ' + data + '</div>');
             });
 
             // Update room list.
@@ -52,11 +53,11 @@ $(document).ready(function() {
                     if (roomJSON != null) {
                         if (roomJSON.roomName == current_room) {
                             // Don't allow users to join room they are already in.
-                            $("#rooms").append('<div class="roomItem">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</div>');
+                            $("#rooms").prepend('<div class="roomItem">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</div>');
                         }
                         else {
                             // Create link with onlick function that switches rooms.
-                            $("#rooms").append('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
+                            $("#rooms").prepend('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                         }
                     }
                 });
@@ -133,6 +134,10 @@ $(document).ready(function() {
                         }
                     });
                 }
+
+                if (over) {
+                    switchRoom("Lobby");
+                }
             });
 
             // New user in room notification.
@@ -147,8 +152,8 @@ $(document).ready(function() {
 
                 // Insert each player in DOM.
                 for (var i = 0; i < playersList.length; i++) {
-                    $("#players").append('<div class="player" id="player' + i + '">' + playersList[i] + '</div>');
-                    $("#progressContainer").append('<div class="progress">' +
+                    $("#players").prepend('<div class="player" id="player' + i + '">' + playersList[i] + '</div>');
+                    $("#progressContainer").prepend('<div class="progress">' +
                     '<div id="progress' + i + '" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;">' + playersList[i] + '</div>' +
                     '</div>');
                 }
@@ -236,32 +241,34 @@ function switchRoom(room) {
 // This section handles button clicks.
 $(function() {
     // Send chat message on button click.
-    $('#chatSend').click( function() {
-        var message = $('#chatData').val();
-        $('#chatData').val('');
-        socket.emit('sendChat', message);
+    $("#chatSend").click( function() {
+        var message = $("#chatData").val();
+        $("#chatData").val("");
+        socket.emit("sendChat", message);
+        $("#chatData").focus();
     });
 
     // Send chat message on enter.
-    $('#chatData').keypress(function(e) {
+    $("#chatData").keypress(function(e) {
         if(e.which == 13) {
             $(this).blur();
-            $('#chatSend').focus().click();
+            $("#chatSend").focus().click();
+            $(this).focus();
         }
     });
 
     // Join room on enter.
-    $('#roomName').keypress(function(e) {
+    $("#roomName").keypress(function(e) {
         if(e.which == 13) {
             $(this).blur();
-            $('#joinRoom').focus().click();
+            $("#joinRoom").focus().click();
         }
     });
 
     // Join room
     $("#joinRoom").click(function() {
-        var name = $('#roomName').val();
-        $('#roomName').val('');
+        var name = $("#roomName").val();
+        $("#roomName").val("");
         switchRoom(name);
     });
 
@@ -273,7 +280,7 @@ $(function() {
     // Handle clicks on 4 suggestion boxes.
     $(".suggestion").click(function() {
         // Disable clicked button.
-        $(this).prop('disabled', true);
+        $(this).prop("disabled", true);
 
         // Get suggestion value.
         var chosenSuggestion = $(this).html();
@@ -284,7 +291,7 @@ $(function() {
             result = "T";
             $(".suggestion").not(this).css({"background-color": "grey"});
             $(this).css({"background-color": "green"});
-            $(".suggestion").prop('disabled', true);
+            $(".suggestion").prop("disabled", true);
         }
         else {
             // Punish by 5 seconds. !!! Or it would maybe be better to just disable further answering.
@@ -297,6 +304,6 @@ $(function() {
 
         // Send to server to register answer.
         if ((myEnd - myBegin) != null)
-            socket.emit('taskAnswered', result, (myEnd - myBegin) / 1000);
+            socket.emit("taskAnswered", result, (myEnd - myBegin) / 1000);
     });
 });

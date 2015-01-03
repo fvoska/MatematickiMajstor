@@ -67,54 +67,7 @@ io.sockets.on('connection', function(socket) {
 
     // Switch user room.
     socket.on('switchRoom', function(newRoom) {
-        var oldRoom = socket.room;
-        var newRoomStripped = newRoom;
-
-        // Prepend room name with "_" to differentiate it from default socket room names (don't prepend to lobby).
-        if (newRoom != "Lobby") {
-            newRoom = "_" + newRoom;
-        }
-
-        // Add user to room if room isn't full.
-        var clientsInRoom = findClientsSocketByRoomId(newRoom).length;
-        if (clientsInRoom == null || clientsInRoom < 4) {
-            // Leave old room and enter new room.
-            socket.leave(socket.room);
-            socket.join(newRoom);
-
-            // Notify others of leaving.
-            socket.emit('updateChat', 'SERVER', 'you have connected to ' + newRoomStripped);
-            socket.broadcast.to(oldRoom).emit('updateChat', 'SERVER', socket.username + ' has left this room');
-
-            // Return rooms to Lobby.
-            socket.broadcast.to(oldRoom).emit('updateRooms', updateRooms(), null);
-            socket.room = newRoom;
-
-            // Notify others of joining.
-            socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
-
-            var usersList = findUsernamesByRoomId(newRoom);
-            socket.broadcast.to(newRoom).emit("updateUsers", usersList);
-            socket.emit("updateUsers", usersList);
-        }
-        else {
-            socket.emit('roomFull');
-        }
-
-        // Check if last joined user was 4th.
-        clientsInRoom = findClientsSocketByRoomId(newRoom).length;
-        if (clientsInRoom == 4) {
-            // Start game.
-            setTimeout(function() {
-                sendTask(newRoom);
-            }, 1000);
-
-            // Repeatedly check if everyone answered (every 2 sec).
-            /*var myTimer = setInterval(function() {
-                var roundOver = checkRoundResults(socket.room);
-                if (roundOver) clearInterval(myTimer);
-            }, 2000);*/
-        }
+        switchRoom(socket, newRoom);
     });
 
     socket.on('taskAnswered', function(result, time) {
@@ -146,6 +99,57 @@ io.sockets.on('connection', function(socket) {
 http.listen(portGame, function() {
     console.log("Listening on *:" + portGame);
 });
+
+function switchRoom(socket, newRoom) {
+    var oldRoom = socket.room;
+    var newRoomStripped = newRoom;
+
+    // Prepend room name with "_" to differentiate it from default socket room names (don't prepend to lobby).
+    if (newRoom != "Lobby") {
+        newRoom = "_" + newRoom;
+    }
+
+    // Add user to room if room isn't full.
+    var clientsInRoom = findClientsSocketByRoomId(newRoom).length;
+    if (clientsInRoom == null || clientsInRoom < 4) {
+        // Leave old room and enter new room.
+        socket.leave(socket.room);
+        socket.join(newRoom);
+
+        // Notify others of leaving.
+        socket.emit('updateChat', 'SERVER', 'you have connected to ' + newRoomStripped);
+        socket.broadcast.to(oldRoom).emit('updateChat', 'SERVER', socket.username + ' has left this room');
+
+        // Return rooms to Lobby.
+        socket.broadcast.to(oldRoom).emit('updateRooms', updateRooms(), null);
+        socket.room = newRoom;
+
+        // Notify others of joining.
+        socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
+
+        var usersList = findUsernamesByRoomId(newRoom);
+        socket.broadcast.to(newRoom).emit("updateUsers", usersList);
+        socket.emit("updateUsers", usersList);
+    }
+    else {
+        socket.emit('roomFull');
+    }
+
+    // Check if last joined user was 4th.
+    clientsInRoom = findClientsSocketByRoomId(newRoom).length;
+    if (clientsInRoom == 4) {
+        // Start game.
+        setTimeout(function() {
+            sendTask(newRoom);
+        }, 1000);
+
+        // Repeatedly check if everyone answered (every 2 sec).
+        /*var myTimer = setInterval(function() {
+         var roundOver = checkRoundResults(socket.room);
+         if (roundOver) clearInterval(myTimer);
+         }, 2000);*/
+    }
+}
 
 function checkRoundResults(roomId) {
     // TODO: this needs to be refactored. Maybe use multi for redis
@@ -182,6 +186,13 @@ function checkRoundResults(roomId) {
             }
 
             io.sockets["in"](roomId).emit('roundResults', fastestPlayer.username, fastestTime, over);
+
+            /*if (over) {
+                for (var i in players) {
+                    var playerSocket = players[i];
+                    switchRoom(playerSocket, "Lobby");
+                }
+            }*/
         }
         else {
             // Noone answered in time.
@@ -240,7 +251,7 @@ function sendTask(toRoom) {
     }
 
     // Generate a task with suggestions.
-    generator.create(2, ['+', '-', '*']);
+    generator.create(2, ["+", "-", "*"]);
     var task = generator.getTask();
     var result = generator.getResult();
     var suggestions = generator.getSuggestions();
@@ -251,5 +262,5 @@ function sendTask(toRoom) {
     taskJSON.suggestions = suggestions;
 
     // Send to sockets.
-    io.sockets["in"](toRoom).emit('task', JSON.stringify(taskJSON));
+    io.sockets["in"](toRoom).emit("task", JSON.stringify(taskJSON));
 }
