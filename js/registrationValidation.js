@@ -13,6 +13,7 @@ $(document).ready(function() {
 });
 
 function checkForm(form) {
+    resetAlerts();
     // Disable form.
     $("#registrationForm :input").prop("disabled", true);
 
@@ -21,7 +22,7 @@ function checkForm(form) {
 
     if(form.username.value == "") {
         //alert("Username can not be blank!");
-        validationFeedback("Username can not be blank!");
+        validationFeedback("#username-alert", "Username can not be blank!");
         $("#username").focus();
         passed = false;
     }
@@ -29,7 +30,7 @@ function checkForm(form) {
     var re = /^\w+$/;
     if(passed && (!re.test(form.username.value))) {
         //alert("Username must contain only letters, numbers and underscores!");
-        validationFeedback("Username must contain only letters, numbers and underscores!");
+        validationFeedback("#username-alert", "Username must contain only letters, numbers and underscores!");
         $("#username").focus();
         passed = false;
     }
@@ -37,50 +38,50 @@ function checkForm(form) {
     var x = form.email.value;
     var atpos = x.indexOf("@");
     var dotpos = x.lastIndexOf(".");
-    if (passed && (atpos<1 || dotpos<atpos+2 || dotpos+2>=x.length)) {
+    if (atpos<1 || dotpos<atpos+2 || dotpos+2>=x.length) {
         //alert("Not a valid e-mail address!");
-        validationFeedback("Not a valid e-mail address!");
+        validationFeedback("#email-alert", "Not a valid e-mail address!");
         $("#email").focus();
         passed = false;
     }
 
-    if(passed && (form.password.value != "" && form.password.value == form.passwordConfirm.value)) {
+    if(form.password.value != "" && form.password.value == form.passwordConfirm.value) {
         if(form.password.value.length < 6) {
             //alert("Password must contain at least six characters!");
-            validationFeedback("Password must contain at least six characters!");
+            validationFeedback("#password-alert", "Password must contain at least six characters!");
             $("#password").focus();
             passed = false;
         }
         if(form.password.value == form.username.value) {
             //alert("Password must be different from Username!");
-            validationFeedback("Password must be different from Username!");
+            validationFeedback("#password-alert", "Password must be different from Username!");
             $("#password").focus();
             passed = false;
         }
         re = /[0-9]/;
         if(!re.test(form.password.value)) {
             //alert("Password must contain at least one number (0-9)!");
-            validationFeedback("Password must contain at least one number (0-9)!");
+            validationFeedback("#password-alert", "Password must contain at least one number (0-9)!");
             $("#password").focus();
             passed = false;
         }
         re = /[a-z]/;
         if(!re.test(form.password.value)) {
             //alert("Password must contain at least one lowercase letter (a-z)!");
-            validationFeedback("Password must contain at least one lowercase letter (a-z)!");
+            validationFeedback("#password-alert", "Password must contain at least one lowercase letter (a-z)!");
             $("#password").focus();
             passed = false;
         }
         re = /[A-Z]/;
         if(!re.test(form.password.value)) {
             //alert("Password must contain at least one uppercase letter (A-Z)!");
-            validationFeedback("Password must contain at least one uppercase letter (A-Z)!");
+            validationFeedback("#password-alert", "Password must contain at least one uppercase letter (A-Z)!");
             $("#password").focus();
             passed = false;
         }
-    } else if (passed) {
+    } else {
         //alert("Please check that you've entered and confirmed your password!");
-        validationFeedback("Please check that you've entered and confirmed your password!");
+        validationFeedback("#password-alert", "Please check that you've entered and confirmed your password!");
         $("#password").focus();
         passed = false;
     }
@@ -98,7 +99,7 @@ function checkForm(form) {
         if (data == "ok") {
             // Log in after registration.
             //alert("Successful registration. You will now be logged in!");
-            validationFeedback("Successful registration. You will now be logged in!");
+            notifierFeedback("Successful registration. You will now be logged in!");
             var loginPost = $.post(URLLoginPost, { username: form.username.value, password: form.password.value });
             
             loginPost.success(function(data) {
@@ -115,10 +116,10 @@ function checkForm(form) {
         else if (data.split('|')[0] == "Exists") {
             // Username taken.
             //alert("Username \"" + data.split('|')[1] + "\" is already taken");
-            validationFeedback("Username \"" + data.split('|')[1] + "\" is already taken");
+            validationFeedback("username-alert", "Username \"" + data.split('|')[1] + "\" is already taken");
         }
         else {
-            validationFeedback("Can not reach registration server, please try again later.");
+            notifierFeedback("Can not reach registration server, please try again later.");
         }
 
         // Re-enable form.
@@ -127,7 +128,7 @@ function checkForm(form) {
     registerPost.fail(function(data) {
         // Re-enable form.
         //alert("Can not reach registration server, please try again later.");
-        validationFeedback("Can not reach registration server, please try again later.");
+        notifierFeedback("Can not reach registration server, please try again later.");
         $("#registrationForm :input").prop("disabled", false);
     });
     return false;
@@ -155,10 +156,22 @@ function setNotifier(text, show, spinner) {
     });
 }
 
-function validationFeedback(text) {
+function validationFeedback(element, text) {
+    $(element).slideUp(250, function() {
+        $(element + " .alert-message").html(text);
+        $(element).slideDown(250);
+    });
+}
+
+function notifierFeedback(text) {
     setNotifier(text, true, false);
     if (statusTimer) clearTimeout(statusTimer);
     statusTimer = setTimeout(function() {
         setNotifier(text, false, false);
     }, 3000);
+}
+
+function resetAlerts() {
+    $(".alert-danger").slideUp(250);
+    $("#status-notifier-container").slideUp(250);
 }

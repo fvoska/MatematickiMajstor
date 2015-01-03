@@ -25,10 +25,20 @@
 				<div class="form-group">
 					<label for="username"><b>Username</b></label>
 					<input type="text" class="form-control" id="username" name="username" placeholder="Enter username" />
+					<div id="username-alert" class="alert alert-danger" role="alert">
+						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+						<span class="sr-only">Error:</span>
+						<span class="alert-message"></span>
+					</div>
 				</div>
 				<div class="form-group">
 					<label for="password"><b>Password</b></label>
 					<input type="password" class="form-control" id="password" name="password" placeholder="Enter password" />
+					<div id="password-alert" class="alert alert-danger" role="alert">
+						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+						<span class="sr-only">Error:</span>
+						<span class="alert-message"></span>
+					</div>
 				</div>
 				<div class="form-group">
 					<label for="passwordConfirm"><b>Confirm password</b></label>
@@ -37,6 +47,11 @@
 				<div class="form-group">
 					<label for="email"><b>E-mail</b></label>
 					<input type="email" class="form-control" id="email" name="email" placeholder="Enter e-mail" />
+					<div id="email-alert" class="alert alert-danger" role="alert">
+						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+						<span class="sr-only">Error:</span>
+						<span class="alert-message"></span>
+					</div>
 				</div>
 				<br>
 				<input type="submit" class="btn btn-primary" value="Submit registration" />
