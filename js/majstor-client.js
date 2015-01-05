@@ -64,8 +64,7 @@ $(document).ready(function() {
 
 function setupSockets() {
     // Sockets section, handles events from server.
-    socket = io.connect("127.0.0.1:8080");
-    // Use 95.85.6.210:8080 for remote server if you don't run node.js on localhost.
+    socket = io.connect(socketURL);
 
     // Fired upon a connection error.
     socket.io.on("connect_error", function(err) {
