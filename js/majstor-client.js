@@ -1,3 +1,7 @@
+/*
+    TODO #1: Disable answering after wrong answer
+ */
+
 var correctAnswer;
 var myBegin;
 var myUsername;
@@ -55,8 +59,8 @@ $(document).ready(function() {
             });
 
             // Get username.
-            myUsername = data + Date.now().toString(); // Timestamp for testing with multiple tabs with same account.
-            // myUsername = data; // Use this for production
+            //myUsername = data + Date.now().toString(); // Timestamp for testing with multiple tabs with same account.
+            myUsername = data; // Use this for production
             setupSockets();
         }
     });
@@ -164,7 +168,6 @@ function setupSockets() {
         suggestionsArray = shuffle(suggestionsArray);
 
         // Show suggestions in "boxes" on webpage.
-
         $(".suggestion").animate({"opacity": "0"}, 250, null, function() {
             for (var i = 1; i <= 4; i++) {
                 $("#suggestion" + i).html(suggestionsArray[i-1]);
@@ -223,6 +226,13 @@ function setupSockets() {
         // Clear DOM.
         $("#players").empty();
         $("#progressContainer").empty();
+
+        // Reset user list colors.
+        $(".player").css({"color": "#337ab7"});
+
+        // Hide task.
+        $("#task").animate({"opacity": "0"}, 250);
+        $(".suggestion").animate({"opacity": "0"}, 250);
 
         // Insert each player in DOM.
         for (var i = 0; i < playersList.length; i++) {
@@ -331,6 +341,10 @@ function switchRoom(room) {
     }
 }
 
+function refreshRooms() {
+    socket.emit("refreshRooms");
+}
+
 // This section handles button clicks.
 $(function() {
     // Send chat message on button click.
@@ -368,6 +382,10 @@ $(function() {
     // Leave room.
     $("#leaveRoom").click(function() {
         switchRoom("Lobby");
+    });
+
+    $("#refreshRooms").click(function() {
+        refreshRooms();
     });
 
     // Handle clicks on 4 suggestion boxes.

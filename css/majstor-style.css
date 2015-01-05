@@ -320,3 +320,8 @@ body {
     background-color: #a94442!important;
     border-color: #983331!important;
 }
+
+#refreshRooms {
+    cursor: pointer;
+    cursor: hand;
+}

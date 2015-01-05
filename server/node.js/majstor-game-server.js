@@ -1,4 +1,8 @@
-// TODO: Don't send JSON, send things through socket emit parameters when data is simple.
+/*
+    TODO #1: Stop game when only 1 player is left in game.
+    TODO #2: Record round results.
+    TODO #3: Add timestamp to room name.
+*/
 
 // Game controller port.
 var portGame = process.env.PORT || 8080;
@@ -70,17 +74,22 @@ io.sockets.on('connection', function(socket) {
     // Switch user room.
     socket.on('switchRoom', function(newRoom) {
         var refreshUsers = true;
-        if (newRoom == "Lobby") refreshUsers = false;
+        //if (newRoom == "Lobby") refreshUsers = false;
         switchRoom(socket, newRoom, refreshUsers);
     });
 
-    socket.on('taskAnswered', function(result, time) {
+    // Refresh rooms list.
+    socket.on("refreshRooms", function() {
+        socket.emit('updateRooms', updateRooms(), 'Lobby');
+    });
+
+    socket.on("taskAnswered", function(result, time) {
         // Update current user answer time.
         socket.answerStatus = result;
         socket.answerTime = time;
 
         // Let others know
-        io.sockets["in"](socket.room).emit('someoneAnswered', socket.username, result, time);
+        io.sockets["in"](socket.room).emit("someoneAnswered", socket.username, result, time);
 
         // Write to console.
         console.log("[" + socket.room + "] " + socket.username + " answered " + result + " in " + time + "s");
@@ -89,12 +98,12 @@ io.sockets.on('connection', function(socket) {
     });
 
     // Disconnect user.
-    socket.on('disconnect', function() {
+    socket.on("disconnect", function() {
         /*
         delete usernames[socket.username];
-        io.sockets.emit('updateusers', usernames);
+        io.sockets.emit("updateusers", usernames);
         */
-        socket.broadcast.emit('updateChat', 'SERVER', socket.username + ' has disconnected');
+        socket.broadcast.emit("updateChat", "SERVER", socket.username + " has disconnected");
         socket.leave(socket.room);
     });
 });
@@ -133,25 +142,30 @@ function switchRoom(socket, newRoom, refreshUsers) {
         socket.room = newRoom;
 
         // Notify others of joining/leaving.
-        socket.emit('updateChat', 'SERVER', 'you have connected to ' + newRoomStripped);
-        socket.broadcast.to(oldRoom).emit('updateChat', 'SERVER', socket.username + ' has left this room');
-        socket.broadcast.to(newRoom).emit('updateChat', 'SERVER', socket.username + ' has joined this room');
+        socket.emit("updateChat", "SERVER", "you have connected to " + newRoomStripped);
+        socket.broadcast.to(oldRoom).emit("updateChat", "SERVER", socket.username + " has left this room");
+        socket.broadcast.to(newRoom).emit("updateChat", "SERVER", socket.username + " has joined this room");
 
         // Return rooms to others.
         var roomList = updateRooms();
-        socket.broadcast.to(oldRoom).emit('updateRooms', roomList, null);
-        socket.emit('updateRooms', roomList, 'Lobby');
-        socket.broadcast.to(newRoom).emit('updateRooms', roomList, 'Lobby');
+        socket.broadcast.to(oldRoom).emit("updateRooms", roomList, null);
+        socket.emit("updateRooms", roomList, "Lobby");
+        socket.broadcast.to(newRoom).emit("updateRooms", roomList, "Lobby");
 
-        if (refreshUsers && newRoom != "Lobby") {
-            var usersList = findUsernamesByRoomId(newRoom);
-            socket.broadcast.to(oldRoom).emit("updateUsers", usersList);
-            socket.emit("updateUsers", usersList);
-            socket.broadcast.to(newRoom).emit("updateUsers", usersList);
+        if (refreshUsers) {
+            var usersListNew = findUsernamesByRoomId(newRoom);
+            var usersListOld = findUsernamesByRoomId(oldRoom);
+            if (oldRoom != "Lobby") {
+                socket.broadcast.to(oldRoom).emit("updateUsers", usersListOld);
+            }
+            if (newRoom != "Lobby") {
+                socket.emit("updateUsers", usersListNew);
+                socket.broadcast.to(newRoom).emit("updateUsers", usersListNew);
+            }
         }
     }
     else {
-        socket.emit('roomFull');
+        socket.emit("roomFull");
     }
 
     // Check if last joined user was 4th.
@@ -193,6 +207,7 @@ function checkRoundResults(roomId, timeout) {
 
     var players = findClientsSocketByRoomId(roomId);
     if (players == null || players.length == 0) return;
+    // Continue playing normally, even if only 2, 3 or 4 players.
     for (var i in players) {
         var player = players[i];
         var time = player.answerTime;
@@ -218,32 +233,42 @@ function checkRoundResults(roomId, timeout) {
                 over = true;
             }
 
-            io.sockets["in"](roomId).emit('roundResults', fastestPlayer.username, fastestTime, over);
+            io.sockets["in"](roomId).emit("roundResults", fastestPlayer.username, fastestTime, over);
 
             if (over) {
-                players = findClientsSocketByRoomId(roomId);
-                for (var i in players) {
-                    var playerSocket = players[i];
-                    // Reset won counter and answer status/time.
-                    playerSocket.won = 0;
-                    playerSocket.answerTime = -1;
-                    playerSocket.answerStatus = "N";
-
-                    // Shut down the room.
-                    switchRoom(playerSocket, "Lobby", false);
-                }
+                shutDownRoom(roomId, true);
             }
         }
         else {
             // Noone answered in time.
             console.log("[" + roomId + "] " + "Noone answered faster than " + timeLimit + "s");
-            io.sockets["in"](roomId).emit('roundResults', null, -1, false);
+            io.sockets["in"](roomId).emit("roundResults", null, -1, false);
         }
 
         if (!over) {
             setTimeout(function () {
                 sendTask(roomId);
             }, 1000);
+        }
+    }
+}
+
+function shutDownRoom(roomId, throwOut) {
+    var players = findClientsSocketByRoomId(roomId);
+    for (var i in players) {
+        var playerSocket = players[i];
+        // Reset won counter and answer status/time.
+        playerSocket.won = 0;
+        playerSocket.answerTime = -1;
+        playerSocket.answerStatus = "N";
+
+        if (timeLimitTimeout != null) {
+            clearTimeout(timeLimitTimeout);
+        }
+
+        if (throwOut == true) {
+            // Shut down the room.
+            switchRoom(playerSocket, "Lobby", false);
         }
     }
 }
@@ -290,6 +315,12 @@ function sendTask(toRoom) {
         player.answerStatus = "N";
     }
 
+    if (players.length < 4)
+    {
+        shutDownRoom(toRoom, false);
+        return;
+    }
+
     // Generate a task with suggestions.
     generator.create(2, ["+", "-", "*"]);
     var task = generator.getTask();
@@ -315,7 +346,7 @@ function sendTask(toRoom) {
         {
             // Timeout, noone answered in time.
             console.log("[" + toRoom + "] " + "Noone answered faster than " + timeLimit + "s");
-            io.sockets["in"](toRoom).emit('roundResults', null, -1, false);
+            io.sockets["in"](toRoom).emit("roundResults", null, -1, false);
             sendTask(toRoom);
         }*/
     }, timeLimit * 1000);
