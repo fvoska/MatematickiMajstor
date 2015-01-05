@@ -9,18 +9,50 @@
 
     <script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/serviceURLs.js"></script>
     <script type="application/javascript" src="js/loginValidation.js"></script>
-    <script type="application/javascript" src="js/customAlert.js"></script>
 
     <title>Math Master - Login</title>
 </head>
 <body>
 <div id="mainContainer">
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">Math Master</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="game.html">Play</a></li>
+                    <li><a href="stats.html">Statistics</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li id="statusNotLoggedIn">
+                    <li class="statusNotLoggedIn active"><a href="#">Login<span class="sr-only"> (current)</span></a></li>
+                    <li class="statusNotLoggedIn"><a href="registration.html">Register</a></li>
+                    <li class="statusLoggedIn"><p class="navbar-text">You are logged in as:<p id="statusLoggedInUsername" class="navbar-text" style="font-weight: bold;">username</p></p></li>
+                    <li class="statusLoggedIn"><a href="#" onclick="logout();">Log out</a></li>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
 	<form action="#" id="loginForm" name="loginForm" method="POST" onSubmit="return checkForm(this)" novalidate>
-	<div class="login-container" style="width:350px; margin:auto">
+	<div class="login-container" style="width:350px; margin:auto;">
 		<div class="panel panel-primary login">
 			<div class="panel-body">
-                <div id="logout-container-slider" style="display:none;">
+                <div id="logout-container-slider">
                     <h3>You are logged in as</h3>
                     <h1 id="logged-username"></h1>
                     Click here to <a href="#" onclick="logout();">log out an log in again.</a>
@@ -28,7 +60,7 @@
                     <div style="text-align: center;"><a href="game.html" class="btn btn-primary btn-lg" style="font-size: 300%;">Play</a></div>
                 </div>
 
-                <div id="login-container-slider" style="display:none;">
+                <div id="login-container-slider">
                     <h2>Log in</h2>
 
                     <div class="form-group">

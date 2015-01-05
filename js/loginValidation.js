@@ -1,8 +1,7 @@
-var URLLoginPost = "http://localhost/MatematickiMajstor/server/php/login.php";
-var URLLogout = "http://localhost/MatematickiMajstor/server/php/logout.php";
-var URLSessionTest = "http://localhost/MatematickiMajstor/server/php/test_session.php";
-
 $(document).ready(function() {
+    $(".statusLoggedIn").hide();
+    $(".statusNotLoggedIn").hide();
+
     checkLogin();
 });
 
@@ -10,6 +9,11 @@ function checkLogin() {
     $("#loginForm :input").prop("disabled", true);
     $.get(URLSessionTest, function(data) {
         if (data != "") {
+            $("#statusLoggedInUsername").html(data);
+            $(".statusNotLoggedIn").slideUp(250, function() {
+                $(".statusLoggedIn").slideDown(250);
+            });
+
             // Offer to log out.
             $("#logged-username").html(data);
             $("#logout-container-slider").slideDown();
@@ -17,6 +21,10 @@ function checkLogin() {
             $("#loginForm :input").prop("disabled", true);
         }
         else if (data == "") {
+            $(".statusLoggedIn").slideUp(250, function() {
+                $(".statusNotLoggedIn").slideDown(250);
+            });
+
             // OK.
             $("#logout-container-slider").slideUp();
             $("#login-container-slider").slideDown();
@@ -27,6 +35,9 @@ function checkLogin() {
 
 function logout() {
     $.get(URLLogout, function() {
+        $(".statusLoggedIn").slideUp(250, function() {
+            $(".statusNotLoggedIn").slideDown(250);
+        });
         $("#loginForm :input").prop("disabled", false);
         $("#logout-container-slider").slideUp();
         $("#login-container-slider").slideDown();

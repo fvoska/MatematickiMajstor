@@ -9,56 +9,88 @@
 
 	<script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+	<script type="application/javascript" src="js/serviceURLs.js"></script>
     <script type="application/javascript" src="js/registrationValidation.js"></script>
-	<script type="application/javascript" src="js/customAlert.js"></script>
     
     <title>Math Master - Registration</title>
 </head>
 <body>
 <div id="mainContainer">
+	<!-- Navigation bar -->
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="index.html">Math Master</a>
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav">
+					<li><a href="game.html">Play</a></li>
+					<li><a href="stats.html">Statistics</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li id="statusNotLoggedIn">
+					<li class="statusNotLoggedIn"><a href="login.html">Login</a></li>
+					<li class="statusNotLoggedIn active"><a href="#">Register<span class="sr-only"> (current)</span></a></li>
+					</li>
+				</ul>
+			</div><!-- /.navbar-collapse -->
+		</div><!-- /.container-fluid -->
+	</nav>
+
 	<form action="#" id="registrationForm" name="regForm" method="POST" onSubmit="return checkForm(this)" novalidate>
-	<div class="login-container" style="width:350px; margin:auto">
+	<div class="login-container" style="width:350px; margin:auto;">
 		<div class="panel panel-primary login">
 			<div class="panel-body">
-				<h2>Registration</h2>
+				<div id="registration-container-slider">
+					<h2>Registration</h2>
 
-				<div class="form-group">
-					<label for="username"><b>Username</b></label>
-					<input type="text" class="form-control" id="username" name="username" placeholder="Enter username" />
-					<div id="username-alert" class="alert alert-danger" role="alert">
-						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-						<span class="sr-only">Error:</span>
-						<span class="alert-message"></span>
+					<div class="form-group">
+						<label for="username"><b>Username</b></label>
+						<input type="text" class="form-control" id="username" name="username" placeholder="Enter username" />
+						<div id="username-alert" class="alert alert-danger" role="alert">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only">Error:</span>
+							<span class="alert-message"></span>
+						</div>
 					</div>
-				</div>
-				<div class="form-group">
-					<label for="password"><b>Password</b></label>
-					<input type="password" class="form-control" id="password" name="password" placeholder="Enter password" />
-					<div id="password-alert" class="alert alert-danger" role="alert">
-						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-						<span class="sr-only">Error:</span>
-						<span class="alert-message"></span>
+					<div class="form-group">
+						<label for="password"><b>Password</b></label>
+						<input type="password" class="form-control" id="password" name="password" placeholder="Enter password" />
+						<div id="password-alert" class="alert alert-danger" role="alert">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only">Error:</span>
+							<span class="alert-message"></span>
+						</div>
 					</div>
-				</div>
-				<div class="form-group">
-					<label for="passwordConfirm"><b>Confirm password</b></label>
-					<input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" placeholder="Re-enter password" />
-				</div>
-				<div class="form-group">
-					<label for="email"><b>E-mail</b></label>
-					<input type="email" class="form-control" id="email" name="email" placeholder="Enter e-mail" />
-					<div id="email-alert" class="alert alert-danger" role="alert">
-						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-						<span class="sr-only">Error:</span>
-						<span class="alert-message"></span>
+					<div class="form-group">
+						<label for="passwordConfirm"><b>Confirm password</b></label>
+						<input type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" placeholder="Re-enter password" />
 					</div>
-				</div>
-				<br>
-				<input type="submit" class="btn btn-primary" value="Submit registration" />
+					<div class="form-group">
+						<label for="email"><b>E-mail</b></label>
+						<input type="email" class="form-control" id="email" name="email" placeholder="Enter e-mail" />
+						<div id="email-alert" class="alert alert-danger" role="alert">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							<span class="sr-only">Error:</span>
+							<span class="alert-message"></span>
+						</div>
+					</div>
+					<br>
+					<input type="submit" class="btn btn-primary" value="Submit registration" />
 
-				<br>
-				<br>
-				<div>Already registered? <a href="login.html">Login here</a>.</div>
+					<br>
+					<br>
+					<div>Already registered? <a href="login.html">Login here</a>.</div>
+				</div>
 			</div>
 		</div>
 

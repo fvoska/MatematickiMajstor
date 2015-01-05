@@ -11,7 +11,9 @@ body {
     margin: auto;
     padding: 10px;
     padding-top: 20px;
-    width: 1300px;
+    /*width: 1300px;*/
+    max-width: 1300px;
+    width: 90%;
     height: 600px;
     margin-top: 25px;
 }
@@ -269,5 +271,25 @@ body {
 }
 
 .alert-danger {
+    display: none;
+}
+
+.statusNotLoggedIn {
+    display: none;
+}
+
+.statusLoggedIn {
+    display: none;
+}
+
+#registration-container-slider {
+    display: none;
+}
+
+#logout-container-slider {
+    display: none;
+}
+
+#login-container-slider {
     display: none;
 }

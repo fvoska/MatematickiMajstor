@@ -1,57 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<script src="bootstrap/js/bootstrap.min.js"></script>
     <meta charset="UTF-8">
-    <script src="//cdn.socket.io/socket.io-1.2.1.js"></script>
-    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
 
-    <title></title>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/majstor-style.css">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,700,400">
+
+    <script type="application/javascript" src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/serviceURLs.js"></script>
+    <script type="application/javascript">
+        $(document).ready(function() {
+            $(".statusLoggedIn").hide();
+            $(".statusNotLoggedIn").hide();
+
+            $.get(URLSessionTest, function(data) {
+                if (data != "") {
+                    $("#statusLoggedInUsername").html(data);
+                    $(".statusNotLoggedIn").slideUp(250, function() {
+                        $(".statusLoggedIn").slideDown(250);
+                    });
+
+                    // Offer to log out.
+                    $("#logged-username").html(data);
+                    $("#logout-container-slider").slideDown();
+                    $("#login-container-slider").slideUp();
+                    $("#loginForm :input").prop("disabled", true);
+                }
+                else if (data == "") {
+                    $(".statusLoggedIn").slideUp(250, function() {
+                        $(".statusNotLoggedIn").slideDown(250);
+                    });
+
+                    // OK.
+                    $("#logout-container-slider").slideUp();
+                    $("#login-container-slider").slideDown();
+                    $("#loginForm :input").prop("disabled", false);
+                }
+            });
+        });
+        function logout() {
+            $.get(URLLogout, function() {
+                $(".statusLoggedIn").slideUp(250, function() {
+                    $(".statusNotLoggedIn").slideDown(250);
+                });
+            });
+        }
+    </script>
+
+    <title>Math Master</title>
 </head>
 <body>
-<div style="margin:auto;padding:10px;padding-top:20px;width:1300px;height:600px;margin-top:25px;">
-<div class="panel panel-primary" style="position: relative;float:left;left: 20px;text-align: center; width:200px;height:550px;padding:10px;">
-    <div class="panel-heading">
-    <center><h3 class="panel-title">SOBE</h3></center>
-	</div>
-	<br>
-    <div><a href="#" onclick="switchRoom('Lobby')">Lobby</a></div>
-    <div id="rooms"></div>
-</div>
-<div class="panel panel-primary" style="position: relative;float:left; left:35px;width:800px; height:550px;">
-<div class="login-container" style="width:350px; position:relative; margin:auto; margin-top:240px;">
-    <div class="panel panel-default login" id="room creation">
-	<div class="panel-body">
-    <form class="form-inline" role="form">
-		<div class="form-group">
-			<div class="input-group">
-				<label class="sr-only" for="roomname">Ime sobe</label>
-			<input class="form-control" id="roomname" placeholder="Upiši ime sobe">
-			</div>
-		</div>
-		<button type="submit" id="roombutton" class="btn btn-primary">Napravi sobu</button>
-	</form>
-	</div>
-	</div>
-</div>
-</div>
-<div class="panel panel-primary" style="position: relative; float:left; left:50px; width:200px; height:550px;padding:10px;">
-	<div class="panel-heading">
-    <center><h3 class="panel-title">RAZGOVOR</h3></center>
-	</div>
-	<br>
-	<div>
-    <div class="input-group">
-     <input type="text" class="form-control" id="data">
-      <span class="input-group-btn">
-        <button class="btn btn-primary" type="button" id="datasend">Pošalji</button>
-      </span>
-    </div><!-- /input-group -->
-  </div><!-- /.col-lg-6 -->
-  <br>
-  <textarea class="form-control" style="height:400px;"></textarea>
-</div>
+<div id="mainContainer">
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand active" href="#">Math Master<span class="sr-only"> (current)</span></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="game.html">Play</a></li>
+                    <li><a href="stats.html">Statistics</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li id="statusNotLoggedIn">
+                    <li class="statusNotLoggedIn"><a href="login.html">Login</a></li>
+                    <li class="statusNotLoggedIn"><a href="registration.html">Register</a></li>
+                    <li class="statusLoggedIn"><p class="navbar-text">You are logged in as:<p id="statusLoggedInUsername" class="navbar-text" style="font-weight: bold;">username</p></p></li>
+                    <li class="statusLoggedIn"><a href="#" onclick="logout();">Log out</a></li>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <div class="login-container" style="width: 100%; margin:auto; text-align: center;">
+        <div class="panel panel-primary login">
+            <div class="panel-body">
+                <h1>Welcome to Math Master!</h1>
+                Use the bar on top of the page to navigate.
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

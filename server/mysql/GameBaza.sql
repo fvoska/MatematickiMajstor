@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `person` (
   `username` varchar(30) NOT NULL,
   `password` varchar(35) NOT NULL COMMENT 'md5 password hash',
   `mail` varchar(40) NOT NULL,
-  `total` int(11) NOT NULL COMMENT 'games player',
+  `total` int(11) NOT NULL COMMENT 'games player playered',
   `victories` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)

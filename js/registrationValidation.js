@@ -1,13 +1,12 @@
-var URLLoginPost="http://localhost/MatematickiMajstor/server/php/login.php";
-var URLRegisterPost="http://localhost/MatematickiMajstor/server/php/register.php";
-var URLSessionTest = "http://localhost/MatematickiMajstor/server/php/test_session.php";
-
 $(document).ready(function() {
     $.get(URLSessionTest, function(data) {
         if (data != "") {
             // Redirect to login.
             var url = "login.html";
             $(location).attr("href", url);
+        }
+        else {
+            $("#registration-container-slider").slideDown();
         }
     });
 });
