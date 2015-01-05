@@ -1,7 +1,6 @@
 /*
-    TODO #1: Stop game when only 1 player is left in game.
-    TODO #2: Record round results.
-    TODO #3: Add timestamp to room name.
+    TODO #1: Record round results.
+    TODO #2: Add timestamp to room name.
 */
 
 // Game controller port.

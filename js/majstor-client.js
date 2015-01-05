@@ -1,7 +1,3 @@
-/*
-    TODO #1: Disable answering after wrong answer
- */
-
 var correctAnswer;
 var myBegin;
 var myUsername;
@@ -241,6 +237,9 @@ function setupSockets() {
             '<div id="progress' + i + '" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;">' + playersList[i] + '</div>' +
             '</div>');
         }
+        $(".progress-bar").each(function() {
+            $(this).css("background-color", getRandomColor());
+        });
     });
 
     // Feedback from other player answers.
@@ -260,44 +259,6 @@ function setupSockets() {
             }
         });
     });
-}
-
-function logout() {
-    $.get(URLLogout, function() {
-        location.reload();
-        /*$.ajax({
-            url: "",
-            context: document.body,
-            success: function(s, x){
-                $(this).html(s);
-            }
-        });*/
-    });
-}
-
-function randomString(length, chars) {
-    var result = '';
-    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
-    return result;
-}
-
-function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex ;
-
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
 }
 
 // Join other room. It will create new room if it doesn't exits.
@@ -343,6 +304,53 @@ function switchRoom(room) {
 
 function refreshRooms() {
     socket.emit("refreshRooms");
+}
+
+function logout() {
+    $.get(URLLogout, function() {
+        location.reload();
+        /*$.ajax({
+         url: "",
+         context: document.body,
+         success: function(s, x){
+         $(this).html(s);
+         }
+         });*/
+    });
+}
+
+function randomString(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    return result;
+}
+
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex ;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.round(Math.random() * 15)];
+    }
+    return color;
 }
 
 // This section handles button clicks.
@@ -400,15 +408,13 @@ $(function() {
         var result = "F";
         if (chosenSuggestion == correctAnswer) {
             result = "T";
-            $(".suggestion").not(this).css({"background-color": "grey"});
             $(this).css({"background-color": "green"});
-            $(".suggestion").prop("disabled", true);
         }
         else {
-            // Punish by 5 seconds. !!! Or it would maybe be better to just disable further answering.
-            myBegin -= 5000;
             $(this).css({"background-color": "red"});
         }
+        $(".suggestion").not(this).css({"background-color": "grey"});
+        $(".suggestion").prop("disabled", true);
 
         // Stop timer.
         var myEnd = new Date().getTime();
