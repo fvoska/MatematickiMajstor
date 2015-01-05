@@ -4,6 +4,7 @@ var myUsername;
 var currentRoom = "Lobby";
 var playersList = [];
 var socket;
+var roomTimeout = null;
 
 $(document).ready(function() {
     $(".statusLoggedIn").hide();
@@ -240,6 +241,29 @@ function setupSockets() {
         $(".progress-bar").each(function() {
             $(this).css("background-color", getRandomColor());
         });
+    });
+
+    // Room full;
+    socket.on("roomFull", function() {
+        var dialog = BootstrapDialog.show({
+            title: "Room exists",
+            message: "<h4>Game with same room name already exists and is full.</h4>Please try another name.",
+            closable: false,
+            draggable: true,
+            buttons: [{
+                label: "Try another name",
+                cssClass: "btn-primary",
+                action: function(dialogItself){
+                    dialogItself.close();
+                    switchRoom("Lobby");
+                    $("#roomName").focus();
+                }
+            }]
+        });
+        setTimeout(function() {
+            switchRoom("Lobby");
+            dialog.close();
+        }, 5000);
     });
 
     // Feedback from other player answers.

@@ -122,12 +122,13 @@ function switchRoom(socket, newRoom, refreshUsers) {
     var newRoomStripped = newRoom;
 
     if (oldRoom == newRoom) return;
-    console.log("Switching " + socket.username + " from " + oldRoom + " to " + newRoom);
 
     // Prepend room name with "_" to differentiate it from default socket room names (don't prepend to lobby).
     if (newRoom != "Lobby") {
         newRoom = "_" + newRoom;
     }
+
+    console.log("Switching " + socket.username + " from " + oldRoom + " to " + newRoom);
 
     // Add user to room if room isn't full. Don't check capacity for Lobby.
     var clientsInRoom = findClientsSocketByRoomId(newRoom).length;
@@ -165,6 +166,7 @@ function switchRoom(socket, newRoom, refreshUsers) {
     }
     else {
         socket.emit("roomFull");
+        return;
     }
 
     // Check if last joined user was 4th.
