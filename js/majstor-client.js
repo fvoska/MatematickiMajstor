@@ -20,6 +20,7 @@ $(document).ready(function() {
                 title: "You are not logged in",
                 message: "<h4>Would you like to log in, register or play anonymously?</h4>If you play anonymously, your statistics will not be recorded.",
                 closable: false,
+                draggable: true,
                 buttons: [{
                     label: "Login",
                     cssClass: "btn-primary",
@@ -54,7 +55,8 @@ $(document).ready(function() {
             });
 
             // Get username.
-            myUsername = data; // myUsername = data + Date.now().toString(); // Timestamp for testing with multiple tabs with same account.
+            myUsername = data + Date.now().toString(); // Timestamp for testing with multiple tabs with same account.
+            // myUsername = data; // Use this for production
             setupSockets();
         }
     });
@@ -117,6 +119,7 @@ function setupSockets() {
                     // Create link with onlick function that switches rooms.
                     $("#rooms").prepend('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                 }
+                $(".roomItem").css({ "margin": "5px", "padding": "5px" }); // For some reason, properties from css file aren't working.
             }
         });
     });
@@ -194,7 +197,20 @@ function setupSockets() {
         }
 
         if (over) {
-            switchRoom("Lobby");
+            BootstrapDialog.show({
+                title: "The game is over",
+                message: fastestPlayer + " won the game with 3 wins.",
+                closable: false,
+                draggable: true,
+                buttons: [{
+                    label: "Go to Lobby",
+                    cssClass: "btn-primary",
+                    action: function(dialogItself){
+                        dialogItself.close();
+                        switchRoom("Lobby");
+                    }
+                }]
+            });
         }
     });
 

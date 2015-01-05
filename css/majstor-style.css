@@ -293,3 +293,7 @@ body {
 #login-container-slider {
     display: none;
 }
+
+.bootstrap-dialog .modal-header.bootstrap-dialog-draggable {
+    cursor: move;
+}
