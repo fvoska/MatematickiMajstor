@@ -53,9 +53,9 @@
 
     <!-- List of rooms -->
     <div class="panel panel-primary" id="panelLeftContainer">
-        <button type="button" id="leaveRoom" class="btn btn-primary">Leave game</button>
+        <button type="button" id="leaveRoom" class="btn red">Leave game</button>
 
-        <div class="panel-heading">
+        <div class="panel-heading red" style="border-radius: 4px;">
             <h3 class="panel-title"><span id="roomsHeader">Available games</span><span id="playersHeader" style="display: none;">Players</span></h3>
         </div>
 
@@ -68,7 +68,7 @@
                 <div class="player" id="player3">Martin</div>
                 <div class="player" id="player4">Dino</div>
             </div>
-            <div id="gradientRoomsPlayers"></div>
+            <!--<div id="gradientRoomsPlayers"></div>-->
         </div>
     </div>
 
@@ -112,21 +112,21 @@
 
     <!-- Conversation -->
     <div class="panel panel-primary" id="panelRightContainer">
-        <div class="panel-heading">
+        <div class="panel-heading green" style="border-radius: 4px;">
             <h3 class="panel-title"><span id="chatHeaderLobby">Lobby</span><span id="chatHeaderGame" style="display: none;">Game name</span></h3>
         </div>
         <br>
         <div class="input-group">
             <input type="text" class="form-control" id="chatData" placeholder="Enter message">
             <span class="input-group-btn">
-                <button class="btn btn-primary" type="button" id="chatSend">Send</button>
+                <button class="btn green" type="button" id="chatSend">Send</button>
             </span>
         </div>
         <br>
 
         <div id="conversationContainer">
             <div id="conversation"></div>
-            <div id="gradientChat"></div>
+            <!--<div id="gradientChat"></div>-->
         </div>
         <!--<textarea class="form-control" style="height:400px;"></textarea>-->
     </div>

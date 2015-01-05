@@ -120,6 +120,7 @@ function setupSockets() {
                     $("#rooms").prepend('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                 }
                 $(".roomItem").css({ "margin": "5px", "padding": "5px" }); // For some reason, properties from css file aren't working.
+                $(".roomItem").attr("")
             }
         });
     });

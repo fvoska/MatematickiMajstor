@@ -1,10 +1,7 @@
 body {
-    /*font-family: 'Patrick Hand', cursive;
-    font-family: 'Courgette', cursive;
-    font-family: 'Sacramento', cursive;
-    font-family: 'Marck Script', cursive;*/
-    font-family: 'Open Sans', sans-serif;
-    /*font-family: 'Open Sans Condensed', sans-serif;*/
+    font-family: "Open Sans", sans-serif;
+    /*background-image: url("../img/bg-tile.png");*/
+    background-color: #337ab7;
 }
 
 #mainContainer {
@@ -112,9 +109,16 @@ body {
     pointer-events: none;
 }​
 
-.roomItem {
+.roomItem, .roomItem a {
+    display: block;
+    width: 100%;
     padding: 5px;
-    margin: 5px;
+    margin-top: 5px;
+    border-radius: 5px;
+    color: #fff;
+    background-color: #a94442;
+    border-color: #983331;
+    text-align: center;
 }
 
 .chatItem {
@@ -123,7 +127,8 @@ body {
     margin-bottom: 5px;
     border-radius: 5px;
     color: white;
-    background-color: #337ab7;
+    background-color: #449d44;
+    border-color: #398439;
     text-align: left;
 }
 
@@ -296,4 +301,22 @@ body {
 
 .bootstrap-dialog .modal-header.bootstrap-dialog-draggable {
     cursor: move;
+}
+
+.green {
+    color: #fff!important;
+    background-color: #449d44!important;
+    border-color: #398439!important;
+}
+
+.blue {
+    color: #fff!important;
+    background-color: #337ab7!important;
+    border-color: #2e6da4!important;
+}
+
+.red {
+    color: #fff!important;
+    background-color: #a94442!important;
+    border-color: #983331!important;
 }
