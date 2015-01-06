@@ -4,7 +4,7 @@ var myUsername;
 var currentRoom = "Lobby";
 var playersList = [];
 var socket;
-var roomTimeout = null;
+var colors = [];
 
 $(document).ready(function() {
     $(".statusLoggedIn").hide();
@@ -111,11 +111,11 @@ function setupSockets() {
 
             // If there are no rooms except Lobby this will be null.
             if (roomJSON != null) {
-                if (roomJSON.roomName == current_room) {
+                if (roomJSON.roomName == current_room || roomJSON.numberOfUsers == 4 || roomJSON.ready) {
                     // Don't allow users to join room they are already in.
-                    $("#rooms").prepend('<div class="roomItem">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</div>');
+                    $("#rooms").prepend('<div class="roomItem"><a href="#" class="disabled" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                 }
-                else {
+                else if (roomJSON.numberOfUsers < 4) {
                     // Create link with onlick function that switches rooms.
                     $("#rooms").prepend('<div class="roomItem"><a href="#" onclick="switchRoom(\'' + roomJSON.roomName + '\')">' + roomJSON.roomName + ' (' + roomJSON.numberOfUsers + '/4)</a></div>');
                 }
@@ -123,6 +123,11 @@ function setupSockets() {
                 $(".roomItem").attr("")
             }
         });
+    });
+
+    // Ready state
+    socket.on("readyFeedback", function (username, isReady) {
+        $("#cc-" + username).prop("checked", isReady);
     });
 
     // Received new task
@@ -140,7 +145,7 @@ function setupSockets() {
         $(".suggestion").css({"background-color": "#337ab7"});
 
         // Reset user list colors.
-        $(".player").css({"color": "#337ab7"});
+        $(".playerName").css({"color": "#337ab7"});
 
         // Parse JSON.
         var taskJSON = JSON.parse(task);
@@ -185,21 +190,19 @@ function setupSockets() {
             // Noone answered correctly in time.
         }
         else {
-            $(".progress-bar").each(function() {
-                var userTemp = $(this);
-                if (userTemp.html() == fastestPlayer)
-                {
-                    // Increase progress bar for fastest player.
-                    var progress = parseInt(userTemp.attr('aria-valuenow')) + 25;
-                    userTemp.css('width', progress+'%').attr('aria-valuenow', progress);
-                }
-            });
+            // Find fastest player's progress bar.
+            var playerProgressBar = $("#pg-" + fastestPlayer);
+            // Increase progress bar for fastest player.
+            var progress = parseInt(playerProgressBar.attr('aria-valuenow')) + 25;
+            playerProgressBar.css('width', progress+'%').attr('aria-valuenow', progress);
         }
 
         if (over) {
+            var winnerName = fastestPlayer;
+            if (winnerName == myUsername) winnerName = "<b>You</b>";
             BootstrapDialog.show({
                 title: "The game is over",
-                message: fastestPlayer + " won the game with 3 wins.",
+                message: "<h3>" + winnerName + " won the game with 3 wins.</h3>",
                 closable: false,
                 draggable: true,
                 buttons: [{
@@ -225,21 +228,96 @@ function setupSockets() {
         $("#progressContainer").empty();
 
         // Reset user list colors.
-        $(".player").css({"color": "#337ab7"});
+        $(".player .playerName").css({"color": "#337ab7"});
 
         // Hide task.
+        $(".suggestion").prop("disabled", true);
         $("#task").animate({"opacity": "0"}, 250);
         $(".suggestion").animate({"opacity": "0"}, 250);
 
         // Insert each player in DOM.
+        var myIndex = 0;
         for (var i = 0; i < playersList.length; i++) {
-            $("#players").prepend('<div class="player" id="player' + i + '">' + playersList[i] + '</div>');
-            $("#progressContainer").prepend('<div class="progress">' +
-            '<div id="progress' + i + '" class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" style="width: 25%;">' + playersList[i] + '</div>' +
-            '</div>');
+            if (playersList[i].username == myUsername) myIndex = i;
         }
-        $(".progress-bar").each(function() {
-            $(this).css("background-color", getRandomColor());
+
+        // Insert others.
+        for (var i = 0; i < playersList.length; i++) {
+            if (i != myIndex) {
+                var playerUsername = playersList[i].username;
+                var checked = "";
+                if (playersList[i].ready) checked = "checked";
+                // Show in players list.
+                $("#players").prepend('<div class="player" id="pc-' + playerUsername + '">' +
+                '<div class="playerName" id="pn-' + playerUsername + '">' + playerUsername + '</div>' +
+                '<div class="customCheckbox disabled others">' +
+                '<input type="checkbox" value="None" id="cc-' + playerUsername + '" name="check' + playerUsername + '" ' + checked + '/>' +
+                '<label for="cc-' + playerUsername + '"></label>' +
+                '</div>' +
+                '</div>');
+
+                // Add progress bar.
+                var progressbarValue = 25 + 25 * playersList[i].won;
+                $("#progressContainer").prepend('<div class="progress">' +
+                '<div id="pg-' + playerUsername + '" class="progress-bar" role="progressbar" aria-valuenow="' + progressbarValue + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + progressbarValue + '%;">' + playerUsername + '</div>' +
+                '</div>');
+
+                // Color progress bar.
+                $("#pg-" + playerUsername).css("background-color", colors[i]);
+                $("#pc-" + playerUsername).css("background-color", colors[i]);
+            }
+        }
+
+        // Show me at top of players list.
+        var meDisabled = "";
+        var meChecked = "";
+        if (playersList[myIndex].ready) {
+            meDisabled = " disabled";
+            meChecked = "checked";
+        }
+        $("#players").prepend('<div class="panel-heading red" style="border-radius: 4px;"><h3 class="panel-title">Other players</h3></div>');
+        $("#players").prepend('<div class="player" id="pc-' + myUsername + '">' +
+        '<div class="playerName" id="pn-' + myUsername + '">' + myUsername + '</div>' +
+        '<div class="customCheckbox' + meDisabled + '">' +
+        '<input type="checkbox" value="None" id="cc-' + myUsername + '" name="check' + myUsername + '" ' + meChecked + '/>' +
+        '<label for="cc-' + myUsername + '"></label>' +
+        '</div>' +
+        '</div>');
+
+        // My progress bar.
+        var myProgressbarValue = 25 + 25 * playersList[myIndex].won;
+        $("#progressContainer").prepend('<div class="progress">' +
+        '<div id="pg-' + myUsername + '" class="progress-bar" role="progressbar" aria-valuenow="' + myProgressbarValue + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + myProgressbarValue + '%;">' + myUsername + '</div>' +
+        '</div>');
+
+        // My color progress bar.
+        $("#pg-" + myUsername).css("background-color", colors[myIndex]);
+        $("#pc-" + myUsername).css("background-color", colors[myIndex]);
+
+        // Set event handler on my ready click.
+        $("#cc-" + myUsername).parent().removeClass("disabled");
+        $("#cc-" + myUsername).click(function () {
+            if (playersList.length > 1) {
+
+                ready(this.checked);
+                $(this).parent().addClass("disabled");
+            }
+            else {
+                $(this).attr("checked", false);
+                BootstrapDialog.show({
+                    title: "Not enough players",
+                    message: "You can not play alone. Please wait for more players.",
+                    closable: true,
+                    draggable: true,
+                    buttons: [{
+                        label: "OK",
+                        cssClass: "btn-primary",
+                        action: function(dialogItself){
+                            dialogItself.close();
+                        }
+                    }]
+                });
+            }
         });
     });
 
@@ -269,33 +347,44 @@ function setupSockets() {
     // Feedback from other player answers.
     socket.on("someoneAnswered", function(user, result, time) {
         // Find element of that player
-        $(".player").each(function() {
-            var userTemp = $(this);
-            if (userTemp.html() == user)
-            {
-                // Color it according to wrong/right answer.
-                if (result == "T") {
-                    userTemp.css({"color": "green"});
-                }
-                else if (result == "F") {
-                    userTemp.css({"color": "red"});
-                }
-            }
-        });
+        var player = $("#pn-" + user);
+
+        // Color it according to wrong/right answer.
+        if (result == "T") {
+            player.css({"color": "green"});
+        }
+        else if (result == "F") {
+            player.css({"color": "red"});
+        }
     });
 }
 
 // Join other room. It will create new room if it doesn't exits.
 function switchRoom(room) {
+    // No point in joining current room.
     if (currentRoom == room) return;
+
+    if (room != "Lobby") {
+        // Generate new random colors.
+        var i = 0;
+        colors = [];
+        while (i < 4) {
+            colors.push(getRandomColor());
+            i++;
+        }
+    }
+
+    // Change room.
     currentRoom = room;
     $("#players").empty();
     socket.emit('switchRoom', room);
     if ($("#middleContainer").css("margin-top") != "0px") {
-        // Go to Lobby.
+        // Going to Lobby.
+
         $("#progressContainer").empty();
         $("#task").animate({"opacity": "0"}, 250);
         $(".suggestion").animate({"opacity": "0"}, 250);
+        $(".suggestion").prop("disabled", true);
 
         $("#roomCreation").fadeOut(250, function() {
             $("#middleContainer").css({"margin": "0px", "width": "100%"});
@@ -307,10 +396,11 @@ function switchRoom(room) {
 
         $("#rooms").slideUp(250);
         setTimeout(function() {$("#players").slideDown();}, 125);
-        setTimeout(function() {$("#leaveRoom").slideDown(500);}, 250);
+        setTimeout(function() {$("#leaveRoom").slideDown(500); $("#roomScroller").css({ "height": "460px" })}, 250);
     }
     else {
-        // Go to game.
+        // Going to game.
+
         $("#roomPlay").fadeOut(250, function() {
             $("#middleContainer").css({"margin": "auto", "margin-top": "240px", "width": "350px"});
             $("#roomCreation").fadeIn(250);
@@ -322,7 +412,7 @@ function switchRoom(room) {
 
         $("#rooms").slideDown(250);
         setTimeout(function() {$("#players").slideUp();}, 125);
-        setTimeout(function() {$("#leaveRoom").slideUp(500);}, 250);
+        setTimeout(function() {$("#leaveRoom").slideUp(500); $("#roomScroller").css({ "height": "500px" })}, 250);
     }
 }
 
@@ -333,13 +423,6 @@ function refreshRooms() {
 function logout() {
     $.get(URLLogout, function() {
         location.reload();
-        /*$.ajax({
-         url: "",
-         context: document.body,
-         success: function(s, x){
-         $(this).html(s);
-         }
-         });*/
     });
 }
 
@@ -352,10 +435,10 @@ function randomString(length, chars) {
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex ;
 
-    // While there remain elements to shuffle...
+    // While there remain elements to shuffle.
     while (0 !== currentIndex) {
 
-        // Pick a remaining element...
+        // Pick a remaining element.
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
 
@@ -369,12 +452,17 @@ function shuffle(array) {
 }
 
 function getRandomColor() {
+    // HEX color code.
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
     for (var i = 0; i < 6; i++ ) {
         color += letters[Math.round(Math.random() * 15)];
     }
     return color;
+}
+
+function ready(isReady) {
+    socket.emit("ready", isReady);
 }
 
 // This section handles button clicks.

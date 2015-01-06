@@ -53,23 +53,19 @@
 
     <!-- List of rooms -->
     <div class="panel panel-primary" id="panelLeftContainer">
-        <button type="button" id="leaveRoom" class="btn red">Leave game</button>
-
         <div class="panel-heading red" style="border-radius: 4px;">
-            <h3 class="panel-title"><span id="roomsHeader">Available games&nbsp;&nbsp;<span id="refreshRooms" class="glyphicon glyphicon-refresh" aria-hidden="true"></span></span><span id="playersHeader" style="display: none;">Players</span></h3>
+            <h3 class="panel-title"><span id="roomsHeader">Games&nbsp;&nbsp;<span id="refreshRooms" class="glyphicon glyphicon-refresh" aria-hidden="true"></span></span><span id="playersHeader" style="display: none;">Me</span></h3>
         </div>
 
         <div id="roomScroller">
             <div id="rooms">
             </div>
             <div id="players">
-                <div class="player" id="player1">Marko</div>
-                <div class="player" id="player2">Matija</div>
-                <div class="player" id="player3">Martin</div>
-                <div class="player" id="player4">Dino</div>
             </div>
             <!--<div id="gradientRoomsPlayers"></div>-->
         </div>
+
+        <button type="button" id="leaveRoom" class="btn red">Leave game</button>
     </div>
 
     <!-- Room / Game area -->

@@ -1,6 +1,5 @@
 /*
     TODO #1: Record round results.
-    TODO #2: Add timestamp to room name.
 */
 
 // Game controller port.
@@ -37,49 +36,58 @@ var timeLimit = 15;
 var timeLimitTimeout = null;
 
 // Create server
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var app = require("express")();
+var http = require("http").Server(app);
+var io = require("socket.io")(http);
 
 // Distribute sockets across the servers using Redis.
-var redisSockets = require('socket.io-redis');
+var redisSockets = require("socket.io-redis");
 io.adapter(redisSockets({ host: hostRedisSockets, port: portRedisSockets }));
 
 // Configure socket events.
-io.sockets.on('connection', function(socket) {
+io.sockets.on("connection", function(socket) {
     // Add user to Lobby.
-    socket.on('addUser', function(username) {
+    socket.on("addUser", function(username) {
         // Assign username and default room
         socket.username = username;
-        socket.room = 'Lobby';
-        socket.join('Lobby');
+        socket.room = "Lobby";
+        socket.join("Lobby");
         socket.won = 0;
         socket.answerTime = -1;
         socket.answerStatus = "N";
+        socket.ready = false;
 
         // Notify others that user has joined the Lobby.
-        socket.emit('updateChat', 'SERVER', 'you have connected to Lobby');
-        socket.broadcast.to('Lobby').emit('updateChat', 'SERVER', username + ' has connected to this room');
+        socket.emit("updateChat", "SERVER", "you have connected to Lobby");
+        socket.broadcast.to("Lobby").emit("updateChat", "SERVER", username + " has connected to this room");
 
         // Return rooms to new user.
-        socket.emit('updateRooms', updateRooms(), 'Lobby');
+        socket.emit("updateRooms", updateRooms(), "Lobby");
     });
 
     // Send message to room.
-    socket.on('sendChat', function(data) {
-        io.sockets["in"](socket.room).emit('updateChat', socket.username, data);
+    socket.on("sendChat", function(data) {
+        io.sockets["in"](socket.room).emit("updateChat", socket.username, data);
     });
 
     // Switch user room.
-    socket.on('switchRoom', function(newRoom) {
+    socket.on("switchRoom", function(newRoom) {
         var refreshUsers = true;
         //if (newRoom == "Lobby") refreshUsers = false;
         switchRoom(socket, newRoom, refreshUsers);
     });
 
+    // Set ready state.
+    socket.on("ready", function(isReady) {
+        socket.ready = isReady;
+        io.sockets["in"](socket.room).emit("readyFeedback", socket.username, isReady);
+        console.log("[" + socket.room + "] Player \"" + socket.username + "\" ready: " + isReady);
+        if (isReady) sendTask(socket.room);
+    });
+
     // Refresh rooms list.
     socket.on("refreshRooms", function() {
-        socket.emit('updateRooms', updateRooms(), 'Lobby');
+        socket.emit("updateRooms", updateRooms(), "Lobby");
     });
 
     socket.on("taskAnswered", function(result, time) {
@@ -107,25 +115,31 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
-// Listen for games
-http.listen(portGame, function() {
-    console.log("Listening on *:" + portGame);
-});
-
 function switchRoom(socket, newRoom, refreshUsers) {
     // Reset counters.
     socket.won = 0;
     socket.answerTime = -1;
     socket.answerStatus = "N";
+    socket.ready = false;
 
     var oldRoom = socket.room;
+    if (oldRoom == newRoom) return;
     var newRoomStripped = newRoom;
 
-    if (oldRoom == newRoom) return;
-
+    var oldRoomSockets = findClientsSocketByRoomId(oldRoom);
     // Prepend room name with "_" to differentiate it from default socket room names (don't prepend to lobby).
     if (newRoom != "Lobby") {
         newRoom = "_" + newRoom;
+    }
+    else {
+        // If we left the game and joined lobby, make players in old room unready.
+        for (var i in oldRoomSockets) {
+            var player = oldRoomSockets[i];
+            player.ready = false;
+        }
+        if (timeLimitTimeout != null) {
+            clearTimeout(timeLimitTimeout);
+        }
     }
 
     console.log("Switching " + socket.username + " from " + oldRoom + " to " + newRoom);
@@ -169,6 +183,7 @@ function switchRoom(socket, newRoom, refreshUsers) {
         return;
     }
 
+    /*
     // Check if last joined user was 4th.
     clientsInRoom = findClientsSocketByRoomId(newRoom).length;
     if (clientsInRoom == 4 && newRoom != "Lobby") {
@@ -177,31 +192,19 @@ function switchRoom(socket, newRoom, refreshUsers) {
             sendTask(newRoom);
         }, 1000);
     }
-}
+    */
 
-function checkInTime(roomId) {
-    var fastestPlayer = null;
-    var fastestTime = timeLimit; // This is maximum time allowed for solving - 20s
-    var numAnswered = 0;
-
-    var players = findClientsSocketByRoomId(roomId);
-    for (var i in players) {
-        var player = players[i];
-        var time = player.answerTime;
-        var status = player.answerStatus;
-        if (status != "N") {
-            numAnswered++;
-        }
-        if (status == "T" && time < fastestTime) {
-            fastestTime = time;
-            fastestPlayer = player;
-        }
-    }
-
-    return fastestPlayer;
+    // Start game.
+    setTimeout(function() {
+        sendTask(newRoom);
+    }, 1000);
 }
 
 function checkRoundResults(roomId, timeout) {
+    if (!roomReady(roomId)) {
+        return;
+    }
+
     var fastestPlayer = null;
     var fastestTime = timeLimit; // This is maximum time allowed for solving - 20s
     var numAnswered = 0;
@@ -222,7 +225,7 @@ function checkRoundResults(roomId, timeout) {
         }
     }
 
-    if (numAnswered == 4 || timeout == true) {
+    if (numAnswered == players.length || timeout == true) {
         var over = false;
         if (fastestPlayer != null) {
             // Round winner.
@@ -262,6 +265,7 @@ function shutDownRoom(roomId, throwOut) {
         playerSocket.won = 0;
         playerSocket.answerTime = -1;
         playerSocket.answerStatus = "N";
+        playerSocket.ready = false;
 
         if (timeLimitTimeout != null) {
             clearTimeout(timeLimitTimeout);
@@ -274,14 +278,25 @@ function shutDownRoom(roomId, throwOut) {
     }
 }
 
+function roomReady(roomId) {
+    var sockets = findClientsSocketByRoomId(roomId);
+    var numReady = 0;
+    for (var s in sockets) {
+        if (sockets[s].ready) {
+            numReady++;
+        }
+    }
+    return numReady == sockets.length;
+}
+
 function updateRooms() {
     var roomList = [];
     for (var key in io.sockets.adapter.rooms) {
         if (key.toString().indexOf("_") == 0) {
-            if (findClientsSocketByRoomId(key).length < 4) {
-                var jsonRoom = "{\"roomName\":\"" + key.toString().split("_")[1] + "\"," + "\"numberOfUsers\":" + findClientsSocketByRoomId(key).length + "}";
+            //if (findClientsSocketByRoomId(key).length < 4) {
+                var jsonRoom = "{\"roomName\":\"" + key.toString().split("_")[1] + "\"," + "\"numberOfUsers\":" + findClientsSocketByRoomId(key).length + ",\"ready\":" + roomReady(key) + "}";
                 roomList.push(jsonRoom);
-            }
+            //}
         }
     }
     return roomList;
@@ -302,53 +317,59 @@ function findUsernamesByRoomId(roomId) {
     var usernames = [];
     var sockets = findClientsSocketByRoomId(roomId);
     for (var s in sockets) {
-        usernames.push(sockets[s].username)
+        usernames.push({ "username": sockets[s].username, "ready": sockets[s].ready, "won": sockets[s].won });
     }
     return usernames;
 }
 
 function sendTask(toRoom) {
-    // Clear players' time and status.
     var players = findClientsSocketByRoomId(toRoom);
-    for (var i in players) {
-        var player = players[i];
-        player.answerTime = -1;
-        player.answerStatus = "N";
+
+    // Check if players are ready (at least 2 players).
+    if (players.length > 1 && toRoom != "Lobby") {
+        if (roomReady(toRoom)) {
+            // Notify Lobby that the game has started.
+            io.sockets["in"]("Lobby").emit("updateRooms", updateRooms(), "Lobby");
+
+            // Clear players' time and status.
+            for (var i in players) {
+                var player = players[i];
+                player.answerTime = -1;
+                player.answerStatus = "N";
+            }
+
+            if (players.length < 2)
+            {
+                shutDownRoom(toRoom, false);
+                return;
+            }
+
+            // Generate a task with suggestions.
+            generator.create(2, ["+", "-", "*"]);
+            var task = generator.getTask();
+            var result = generator.getResult();
+            var suggestions = generator.getSuggestions();
+
+            // Construct JSON with task, result and suggestions.
+            var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null}";
+            taskJSON = JSON.parse(taskJSON);
+            taskJSON.suggestions = suggestions;
+
+            // Send to sockets.
+            io.sockets["in"](toRoom).emit("task", JSON.stringify(taskJSON));
+
+            // Check at the end of time limit.
+            if (timeLimitTimeout != null) {
+                clearTimeout(timeLimitTimeout);
+            }
+            timeLimitTimeout = setTimeout(function() {
+                checkRoundResults(toRoom, true);
+            }, timeLimit * 1000);
+        }
     }
-
-    if (players.length < 4)
-    {
-        shutDownRoom(toRoom, false);
-        return;
-    }
-
-    // Generate a task with suggestions.
-    generator.create(2, ["+", "-", "*"]);
-    var task = generator.getTask();
-    var result = generator.getResult();
-    var suggestions = generator.getSuggestions();
-
-    // Construct JSON with task, result and suggestions.
-    var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null}";
-    taskJSON = JSON.parse(taskJSON);
-    taskJSON.suggestions = suggestions;
-
-    // Send to sockets.
-    io.sockets["in"](toRoom).emit("task", JSON.stringify(taskJSON));
-
-    // Check at the end of time limit.
-    if (timeLimitTimeout != null) {
-        clearTimeout(timeLimitTimeout);
-    }
-    timeLimitTimeout = setTimeout(function() {
-        checkRoundResults(toRoom, true);
-        /*var inTime = checkInTime(toRoom);
-        if (inTime == null)
-        {
-            // Timeout, noone answered in time.
-            console.log("[" + toRoom + "] " + "Noone answered faster than " + timeLimit + "s");
-            io.sockets["in"](toRoom).emit("roundResults", null, -1, false);
-            sendTask(toRoom);
-        }*/
-    }, timeLimit * 1000);
 }
+
+// Listen for games
+http.listen(portGame, function() {
+    console.log("Listening on *:" + portGame);
+});
