@@ -82,10 +82,10 @@ function getUserData(data) {
     // Fill in chart data.
     var stats = $.get(URLGetPlayerStats, { "p": myId } );
     stats.success(function(data) {
+        $("#chart").empty();
         if (data != "") {
             var JSONdata = JSON.parse(data);
             if (JSONdata.t != 0) {
-                var ratio =
                     pieData = [
                         {
                             value: JSONdata.w,
@@ -131,6 +131,6 @@ function getUserData(data) {
         var ctx = document.getElementById("chart-area").getContext("2d");
         var myPie = new Chart(ctx).Pie(pieData, options);
         var legend = myPie.generateLegend();
-        $("#chart").html(legend);
+        $("#chart").append(legend);
     });
 }
