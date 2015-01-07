@@ -125,7 +125,6 @@ body {
 position: relative;
 width: 240px;
 padding: 5px;
-background: #FFFFFF;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
 border-radius: 10px;
@@ -166,7 +165,6 @@ top: 8px;
 position: relative;
 width: 240px;
 padding: 5px;
-background: #FFFFFF;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
 border-radius: 10px;
@@ -201,6 +199,22 @@ width: 0;
 z-index: 0;
 right: -15px;
 top: 8px;
+}
+.chatItemYellow {
+    position: relative;
+    width: 240px;
+    padding: 5px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    border: #f0ad4e solid 5px;
+    background-color: #f0ad4e;
+    color: #FFFFFF;
+    margin: 5px auto;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center;
+    font-size: 75%;
 }
 #leaveRoom {
     display: none;

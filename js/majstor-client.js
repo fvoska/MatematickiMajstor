@@ -98,7 +98,15 @@ function setupSockets() {
     // Chat update
     socket.on("updateChat", function (username, data) {
         // Append message to HTML.
-        $("#conversation").prepend('<div class="chatItem"><b>'+ username + ':</b> ' + data + '</div>');
+        if (username == myUsername) {
+            $("#conversation").prepend('<div class="chatItem"><b>Me:</b> ' + data + '</div>');
+        }
+        else if (username == "SERVER") {
+            $("#conversation").prepend('<div class="chatItemYellow">' + data + '</div>');
+        }
+        else {
+            $("#conversation").prepend('<div class="chatItemRed"><b>'+ username + ':</b> ' + data + '</div>');
+        }
     });
 
     // Update room list.
@@ -382,8 +390,9 @@ function switchRoom(room) {
     currentRoom = room;
     $("#players").empty();
     socket.emit('switchRoom', room);
-    if ($("#middleContainer").css("margin-top") != "0px") {
-        // Going to Lobby.
+
+    if (currentRoom != "Lobby") {
+        // Going to game.
 
         $("#progressContainer").empty();
         $("#task").animate({"opacity": "0"}, 250);
@@ -395,24 +404,31 @@ function switchRoom(room) {
             $("#roomPlay").fadeIn(250);
         });
 
-        $("#roomsHeader").slideUp(300, function() {$("#playersHeader").slideDown(300);});
-        $("#chatHeaderLobby").slideUp(300, function() {$("#chatHeaderGame").slideDown(300);});
+        $("#roomsHeader").slideUp(300, function() {
+            $("#playersHeader").slideDown(300);
+        });
+        $("#chatHeaderLobby").slideUp(300, function() {
+            $("#chatHeaderGame").html(room);
+            $("#chatHeaderGame").slideDown(300);
+        });
 
         $("#rooms").slideUp(250);
         setTimeout(function() {$("#players").slideDown();}, 125);
         setTimeout(function() {$("#leaveRoom").slideDown(500); $("#roomScroller").css({ "height": "460px" })}, 250);
     }
     else {
-        // Going to game.
-
+        // Going to Lobby.
         $("#roomPlay").fadeOut(250, function() {
             $("#middleContainer").css({"margin": "auto", "margin-top": "240px", "width": "350px"});
             $("#roomCreation").fadeIn(250);
         });
 
-        $("#playersHeader").slideUp(300, function() {$("#roomsHeader").slideDown(300);});
-        $("#chatHeaderGame").html(room);
-        $("#chatHeaderGame").slideUp(300, function() {$("#chatHeaderLobby").slideDown(300);});
+        $("#playersHeader").slideUp(300, function() {
+            $("#roomsHeader").slideDown(300);
+        });
+        $("#chatHeaderGame").slideUp(300, function() {
+            $("#chatHeaderLobby").slideDown(300);
+        });
 
         $("#rooms").slideDown(250);
         setTimeout(function() {$("#players").slideUp();}, 125);
