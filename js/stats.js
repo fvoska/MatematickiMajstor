@@ -33,6 +33,18 @@ $(document).ready(function() {
             $("#most5").append(tableRow);
         }
     });
+
+    var fastest = $.get(URLGetFastestPlayerStats);
+    fastest.success(function(data) {
+        console.log(data);
+        var JSONdata = JSON.parse(data);
+        var players = JSONdata.p;
+        for (var i = 0; i < players.length; i++) {
+            var player = players[i];
+            var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.t + "s</td></tr>"
+            $("#fast5").append(tableRow);
+        }
+    });
 });
 function logout() {
     $.get(URLLogout, function() {
@@ -100,6 +112,7 @@ function getUserData(data) {
                         }
                     ];
                 $("#chart").append("<div style=\"color:#337ab7\">Number of games played: " + JSONdata.t + "</div>");
+                $("#chart").append("<div style=\"color:#337ab7\">Win percentage: " + JSONdata.w / JSONdata.t * 100 + "%</div>");
             }
             else if (JSONdata.t == 0) {
                 shouldShowTooltips = false;
@@ -132,5 +145,11 @@ function getUserData(data) {
         var myPie = new Chart(ctx).Pie(pieData, options);
         var legend = myPie.generateLegend();
         $("#chart").append(legend);
+        if (data != "") {
+            var JSONdata = JSON.parse(data);
+            if (JSONdata.a != 0) {
+                $("#chart").append("<div style=\"color:#337ab7\">Your average time to answer: " + JSONdata.a + "s</div>");
+            }
+        }
     });
 }

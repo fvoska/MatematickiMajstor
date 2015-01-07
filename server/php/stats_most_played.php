@@ -1,4 +1,5 @@
 <?php
+
 include 'db_connection.php';
 
 $players = mysql_query('SELECT person.username, person.total FROM person ORDER BY person.total DESC LIMIT 5;');
@@ -17,4 +18,5 @@ while ($row = mysql_fetch_assoc($players)){
     $counter++;
 }
 echo ']}';
+
 ?>

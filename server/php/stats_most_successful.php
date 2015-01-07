@@ -1,7 +1,8 @@
 <?php
+
 include 'db_connection.php';
 
-$players = mysql_query('SELECT person.username, person.victories / person.total AS ratio FROM person ORDER BY ratio DESC LIMIT 5;');
+$players = mysql_query('SELECT person.username, ROUND(person.victories / person.total, 2) AS ratio FROM person ORDER BY ratio DESC LIMIT 5;');
 
 $numRows = mysql_num_rows($players);
 $counter = 1;
@@ -17,4 +18,5 @@ while ($row = mysql_fetch_assoc($players)){
     $counter++;
 }
 echo ']}';
+
 ?>
