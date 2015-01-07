@@ -1,6 +1,7 @@
 var correctAnswer;
 var myBegin;
 var myUsername;
+var myId = -1;
 var currentRoom = "Lobby";
 var playersList = [];
 var socket;
@@ -50,14 +51,16 @@ $(document).ready(function() {
             });
         }
         else {
-            $("#statusLoggedInUsername").html(data);
+            var splitUsername = data.split(" ");
+            $("#statusLoggedInUsername").html(splitUsername[1]);
             $(".statusNotLoggedIn").slideUp(250, function() {
                 $(".statusLoggedIn").slideDown(250);
             });
 
-            // Get username.
+            // Get username and id.
             //myUsername = data + Date.now().toString(); // Timestamp for testing with multiple tabs with same account.
-            myUsername = data; // Use this for production
+            myId = parseInt(splitUsername[0]);
+            myUsername = splitUsername[1]; // Use this for production
             setupSockets();
         }
     });
@@ -87,7 +90,8 @@ function setupSockets() {
         // Once we have DB in place we will use username from DB instead of a prompt.
         //myUsername = prompt("What's your name: ");
         playersList.push(myUsername);
-        socket.emit("addUser", myUsername);
+        console.log(myId);
+        socket.emit("addUser", myUsername, myId);
         $("#conenction-alert").slideUp();
     });
 
@@ -422,6 +426,7 @@ function refreshRooms() {
 
 function logout() {
     $.get(URLLogout, function() {
+        myId = -1;
         location.reload();
     });
 }

@@ -9,13 +9,14 @@ function checkLogin() {
     $("#loginForm :input").prop("disabled", true);
     $.get(URLSessionTest, function(data) {
         if (data != "") {
-            $("#statusLoggedInUsername").html(data);
+            var splitUsername = data.split(" ");
+            $("#statusLoggedInUsername").html(splitUsername[1]);
             $(".statusNotLoggedIn").slideUp(250, function() {
                 $(".statusLoggedIn").slideDown(250);
             });
 
             // Offer to log out.
-            $("#logged-username").html(data);
+            $("#logged-username").html(splitUsername[1]);
             $("#logout-container-slider").slideDown();
             $("#login-container-slider").slideUp();
             $("#loginForm :input").prop("disabled", true);

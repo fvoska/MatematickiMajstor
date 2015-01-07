@@ -47,7 +47,7 @@ io.adapter(redisSockets({ host: hostRedisSockets, port: portRedisSockets }));
 // Configure socket events.
 io.sockets.on("connection", function(socket) {
     // Add user to Lobby.
-    socket.on("addUser", function(username) {
+    socket.on("addUser", function(username, playerId) {
         // Assign username and default room
         socket.username = username;
         socket.room = "Lobby";
@@ -56,6 +56,7 @@ io.sockets.on("connection", function(socket) {
         socket.answerTime = -1;
         socket.answerStatus = "N";
         socket.ready = false;
+        socket.playerId = parseInt(playerId);
 
         // Notify others that user has joined the Lobby.
         socket.emit("updateChat", "SERVER", "you have connected to Lobby");
@@ -235,6 +236,13 @@ function checkRoundResults(roomId, timeout) {
                 // Game winner as well.
                 console.log("[" + roomId + "] " + fastestPlayer.username + " won the game");
                 over = true;
+
+                // Post results.
+                var playersArray = [];
+                for (var i = 0; i < players.length; i++) {
+                    playersArray.push(players[i].playerId);
+                }
+                postResults(playersArray, fastestPlayer.playerId);
             }
 
             io.sockets["in"](roomId).emit("roundResults", fastestPlayer.username, fastestTime, over);
@@ -367,6 +375,14 @@ function sendTask(toRoom) {
             }, timeLimit * 1000);
         }
     }
+}
+
+var request = require('request');
+var URLGameResultPost = "http://localhost/MatematickiMajstor/server/php/record_game_results.php";
+function postResults(playersIds, winnerId) {
+    request.post({ url: URLGameResultPost, form: { "p": playersIds, "w": winnerId }}, function(err,httpResponse,body) {
+        console.log(body);
+    });
 }
 
 // Listen for games

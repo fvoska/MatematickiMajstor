@@ -428,3 +428,24 @@ input[type=checkbox] {
 {
     margin: 10px auto!important;
 }
+
+hr {
+    border: 0;
+    height: 1px;
+
+    background-image: -webkit-linear-gradient(left, rgba(51,122,183,0), rgba(51,122,183,0.75), rgba(51,122,183,0));
+    background-image:    -moz-linear-gradient(left, rgba(51,122,183,0), rgba(51,122,183,0.75), rgba(51,122,183,0));
+    background-image:     -ms-linear-gradient(left, rgba(51,122,183,0), rgba(51,122,183,0.75), rgba(51,122,183,0));
+    background-image:      -o-linear-gradient(left, rgba(51,122,183,0), rgba(51,122,183,0.75), rgba(51,122,183,0));
+}
+
+.table th {
+    text-align: center;
+}
+
+.mainP {
+    text-align: justify;
+    max-width: 800px;
+    margin: auto;
+    padding: 0 5%;
+}
