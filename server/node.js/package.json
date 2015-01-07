@@ -1,12 +1,13 @@
 {
   "name": "majstor-game-server",
   "description": "Matematički Majstor",
-  "version": "0.0.1",
-  "author": "Filip Voska",
+  "version": "1.0.0",
+  "author": "Matija Cerovec, Marko Gudan, Dino Kačavenda, Martin Kurtoić, Filip Voska",
   "dependencies": {
-    "socket.io": "1.2.1",
-    "socket.io-redis": "0.1.4",
-    "express": "4.10.4",
-    "redis": "0.12.1"
+    "socket.io": ">= 1.2.1",
+    "socket.io-redis": ">= 0.1.4",
+    "express": ">= 4.10.4",
+    "redis": ">= 0.12.1",
+    "request": ">= 2.51.0"
   }
 }
