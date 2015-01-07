@@ -486,11 +486,57 @@ function ready(isReady) {
     socket.emit("ready", isReady);
 }
 
+function cleanInput(input) {
+    var div = $('<div/>');
+    div.html(input);
+    div.contents().filter(function(){
+        return this.nodeType !== 3;
+    }).after(function(){
+        return $(this).text();
+    }).remove();
+    return div.html();
+}
+
+function validRoomName(roomName) {
+    // Validate form.
+    var passed = true;
+    var message = "";
+
+    if (roomName == "") {
+        message = "<h4>Room name can not be blank!</h4>"
+        passed = false;
+    }
+
+    var re = /^(\w+\s*)*$/;
+    if (passed && (!re.test(roomName))) {
+        message = "<h4>Room name must contain only letters, numbers, spaces and underscores!</h4>";
+        passed = false;
+    }
+
+    if (!passed) {
+        BootstrapDialog.show({
+            title: "Invalid room name",
+            message: message,
+            closable: true,
+            draggable: true,
+            buttons: [{
+                label: "Try another name",
+                cssClass: "btn-primary",
+                action: function(dialogItself){
+                    dialogItself.close();
+                }
+            }]
+        });
+    }
+
+    return passed;
+}
+
 // This section handles button clicks.
 $(function() {
     // Send chat message on button click.
     $("#chatSend").click( function() {
-        var message = $("#chatData").val();
+        var message = cleanInput($("#chatData").val());
         $("#chatData").val("");
         socket.emit("sendChat", message);
         $("#chatData").focus();
@@ -515,9 +561,14 @@ $(function() {
 
     // Join room
     $("#joinRoom").click(function() {
-        var name = $("#roomName").val();
-        $("#roomName").val("");
-        switchRoom(name);
+        var name = cleanInput($("#roomName").val());
+        if (validRoomName(name)) {
+            $("#roomName").val("");
+            switchRoom(name);
+        }
+        else {
+            $("#roomName").focus();
+        }
     });
 
     // Leave room.

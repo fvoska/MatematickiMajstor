@@ -16,7 +16,7 @@ $(document).ready(function() {
         var players = JSONdata.p;
         for (var i = 0; i < players.length; i++) {
             var player = players[i];
-            var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.r + "</td></tr>"
+            var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.r * 100 + "%</td></tr>"
             $("#succ5").append(tableRow);
         }
     });

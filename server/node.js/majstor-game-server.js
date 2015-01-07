@@ -1,5 +1,6 @@
 /*
-    TODO #1: Record round results.
+    TODO #1: Punish when leaving the room.
+    TODO #2: Some security when posting results.
 */
 
 // Game controller port.
@@ -32,6 +33,7 @@ for (var i = 0; i < process.argv.length; i++)
 
 // Task generator and solver
 var generator = require("./majstor-generator.js");
+var requiredRoundsToWin = 3;
 var timeLimit = 15;
 var timeLimitTimeout = null;
 
@@ -53,6 +55,8 @@ io.sockets.on("connection", function(socket) {
         socket.room = "Lobby";
         socket.join("Lobby");
         socket.won = 0;
+        socket.totalTime = 0;
+        socket.totalAnswers = 0;
         socket.answerTime = -1;
         socket.answerStatus = "N";
         socket.ready = false;
@@ -96,6 +100,9 @@ io.sockets.on("connection", function(socket) {
         socket.answerStatus = result;
         socket.answerTime = time;
 
+        socket.totalTime += time;
+        socket.totalAnswers += 1;
+
         // Let others know
         io.sockets["in"](socket.room).emit("someoneAnswered", socket.username, result, time);
 
@@ -119,6 +126,8 @@ io.sockets.on("connection", function(socket) {
 function switchRoom(socket, newRoom, refreshUsers) {
     // Reset counters.
     socket.won = 0;
+    socket.totalTime = 0;
+    socket.totalAnswers = 0;
     socket.answerTime = -1;
     socket.answerStatus = "N";
     socket.ready = false;
@@ -232,7 +241,7 @@ function checkRoundResults(roomId, timeout) {
             // Round winner.
             console.log("[" + roomId + "] " + fastestPlayer.username + " won the round with time " + fastestTime + "s");
             fastestPlayer.won += 1;
-            if (fastestPlayer.won == 3) {
+            if (fastestPlayer.won == requiredRoundsToWin) {
                 // Game winner as well.
                 console.log("[" + roomId + "] " + fastestPlayer.username + " won the game");
                 over = true;
@@ -240,9 +249,9 @@ function checkRoundResults(roomId, timeout) {
                 // Post results.
                 var playersArray = [];
                 for (var i = 0; i < players.length; i++) {
-                    playersArray.push(players[i].playerId);
+                    playersArray.push(JSON.stringify({ "userId": players[i].playerId, "totalTime": players[i].totalTime, "totalAnswers": players[i].totalAnswers }));
                 }
-                postResults(playersArray, fastestPlayer.playerId);
+                postResults(playersArray, fastestPlayer.playerId, roomId.substring(1));
             }
 
             io.sockets["in"](roomId).emit("roundResults", fastestPlayer.username, fastestTime, over);
@@ -271,6 +280,8 @@ function shutDownRoom(roomId, throwOut) {
         var playerSocket = players[i];
         // Reset won counter and answer status/time.
         playerSocket.won = 0;
+        playerSocket.totalTime = 0;
+        playerSocket.totalAnswers = 0;
         playerSocket.answerTime = -1;
         playerSocket.answerStatus = "N";
         playerSocket.ready = false;
@@ -379,8 +390,8 @@ function sendTask(toRoom) {
 
 var request = require('request');
 var URLGameResultPost = "http://localhost/MatematickiMajstor/server/php/record_game_results.php";
-function postResults(playersIds, winnerId) {
-    request.post({ url: URLGameResultPost, form: { "p": playersIds, "w": winnerId }}, function(err,httpResponse,body) {
+function postResults(playersIds, winnerId, roomName) {
+    request.post({ url: URLGameResultPost, form: { "players": playersIds, "winner": winnerId, "roomName": roomName }}, function(err,httpResponse,body) {
         console.log(body);
     });
 }
