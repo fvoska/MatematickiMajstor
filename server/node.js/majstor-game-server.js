@@ -34,7 +34,7 @@ for (var i = 0; i < process.argv.length; i++)
 // Task generator and solver
 var generator = require("./majstor-generator.js");
 var requiredRoundsToWin = 5;
-var timeLimit = 15;
+var timeLimit = 10;
 var timeLimitTimeout = null;
 
 // Create server
