@@ -121,7 +121,7 @@ function getUserData(data) {
                         }
                     ];
                 $("#chart").append("<div style=\"color:#337ab7\">Number of games played: " + JSONdata.t + "</div>");
-                $("#chart").append("<div style=\"color:#337ab7\">Win percentage: " + JSONdata.w / JSONdata.t * 100 + "%</div>");
+                $("#chart").append("<div style=\"color:#337ab7\">Win percentage: " + Math.round(JSONdata.w / JSONdata.t * 100) + "%</div>");
             }
             else if (JSONdata.t == 0) {
                 shouldShowTooltips = false;

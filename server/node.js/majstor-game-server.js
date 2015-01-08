@@ -207,7 +207,7 @@ function switchRoom(socket, newRoom, refreshUsers) {
     // Start game.
     setTimeout(function() {
         sendTask(newRoom);
-    }, 1000);
+    }, 2000);
 }
 
 function checkRoundResults(roomId, timeout) {
@@ -269,7 +269,7 @@ function checkRoundResults(roomId, timeout) {
         if (!over) {
             setTimeout(function () {
                 sendTask(roomId);
-            }, 1000);
+            }, 2000);
         }
     }
 }
