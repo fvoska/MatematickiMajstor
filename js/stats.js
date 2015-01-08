@@ -104,7 +104,7 @@ function getUserData(data) {
     var stats = $.get(URLGetPlayerStats, { "p": myId } );
     stats.success(function(data) {
         $("#chart").empty();
-        if (data != "") {
+        if (data != "{}") {
             var JSONdata = JSON.parse(data);
             if (JSONdata.t != 0) {
                     pieData = [
