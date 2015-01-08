@@ -11,7 +11,6 @@ $(document).ready(function() {
     // Fill in top 5 ratio players.
     var ratio = $.get(URLGetRatioStats);
     ratio.success(function(data) {
-        console.log(data);
         var JSONdata = JSON.parse(data);
         var players = JSONdata.p;
         for (var i = 0; i < players.length; i++) {
@@ -19,12 +18,15 @@ $(document).ready(function() {
             var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.r * 100 + "%</td></tr>"
             $("#succ5").append(tableRow);
         }
+        if (players.length == 0) {
+            var tableRow = "<tr><td>-</td><td>-</td><td>-</td></tr>"
+            $("#succ5").append(tableRow);
+        }
     });
 
     // Fill in top 5 number of games players.
     var ratio = $.get(URLGetMostPlayedStats);
     ratio.success(function(data) {
-        console.log(data);
         var JSONdata = JSON.parse(data);
         var players = JSONdata.p;
         for (var i = 0; i < players.length; i++) {
@@ -32,16 +34,23 @@ $(document).ready(function() {
             var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.t + "</td></tr>"
             $("#most5").append(tableRow);
         }
+        if (players.length == 0) {
+            var tableRow = "<tr><td>-</td><td>-</td><td>-</td></tr>"
+            $("#most5").append(tableRow);
+        }
     });
 
     var fastest = $.get(URLGetFastestPlayerStats);
     fastest.success(function(data) {
-        console.log(data);
         var JSONdata = JSON.parse(data);
         var players = JSONdata.p;
         for (var i = 0; i < players.length; i++) {
             var player = players[i];
             var tableRow = "<tr><td>" + (i + 1) + "</td><td>" + player.u + "</td><td>" + player.t + "s</td></tr>"
+            $("#fast5").append(tableRow);
+        }
+        if (players.length == 0) {
+            var tableRow = "<tr><td>-</td><td>-</td><td>-</td></tr>"
             $("#fast5").append(tableRow);
         }
     });
@@ -147,7 +156,7 @@ function getUserData(data) {
         $("#chart").append(legend);
         if (data != "") {
             var JSONdata = JSON.parse(data);
-            if (JSONdata.a != 0) {
+            if (JSONdata.a) {
                 $("#chart").append("<div style=\"color:#337ab7\">Your average time to answer: " + JSONdata.a + "s</div>");
             }
         }
