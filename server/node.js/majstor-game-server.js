@@ -33,7 +33,7 @@ for (var i = 0; i < process.argv.length; i++)
 
 // Task generator and solver
 var generator = require("./majstor-generator.js");
-var requiredRoundsToWin = 3;
+var requiredRoundsToWin = 5;
 var timeLimit = 15;
 var timeLimitTimeout = null;
 
@@ -370,9 +370,10 @@ function sendTask(toRoom) {
             var suggestions = generator.getSuggestions();
 
             // Construct JSON with task, result and suggestions.
-            var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null}";
+            var taskJSON = "{\"task\":\"" + task.join(" ") + "\",\"result\":\"" + result + "\",\"suggestions\": null,\"required\": null}";
             taskJSON = JSON.parse(taskJSON);
             taskJSON.suggestions = suggestions;
+            taskJSON.required = requiredRoundsToWin;
 
             // Send to sockets.
             io.sockets["in"](toRoom).emit("task", JSON.stringify(taskJSON));

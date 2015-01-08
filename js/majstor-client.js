@@ -6,6 +6,8 @@ var currentRoom = "Lobby";
 var playersList = [];
 var socket;
 var colors = [];
+var requiredRoundsToWin = null;
+var progressBarIncrement = null;
 
 $(document).ready(function() {
     $(".statusLoggedIn").hide();
@@ -161,6 +163,8 @@ function setupSockets() {
 
         // Parse JSON.
         var taskJSON = JSON.parse(task);
+        requiredRoundsToWin = taskJSON.required;
+        progressBarIncrement = 75 / requiredRoundsToWin;
 
         // Show task on webpage.
         $("#task").animate({"opacity": "0"}, 250, null, function() {
@@ -205,7 +209,7 @@ function setupSockets() {
             // Find fastest player's progress bar.
             var playerProgressBar = $("#pg-" + fastestPlayer);
             // Increase progress bar for fastest player.
-            var progress = parseInt(playerProgressBar.attr('aria-valuenow')) + 25;
+            var progress = parseInt(playerProgressBar.attr('aria-valuenow')) + progressBarIncrement;
             playerProgressBar.css('width', progress+'%').attr('aria-valuenow', progress);
         }
 
@@ -214,7 +218,7 @@ function setupSockets() {
             if (winnerName == myUsername) winnerName = "<b>You</b>";
             BootstrapDialog.show({
                 title: "The game is over",
-                message: "<h3>" + winnerName + " won the game with 3 wins.</h3>",
+                message: "<h3>" + winnerName + " won the game with " + requiredRoundsToWin + " wins.</h3>",
                 closable: false,
                 draggable: true,
                 buttons: [{
@@ -269,7 +273,7 @@ function setupSockets() {
                 '</div>');
 
                 // Add progress bar.
-                var progressbarValue = 25 + 25 * playersList[i].won;
+                var progressbarValue = 25 + progressBarIncrement * playersList[i].won;
                 $("#progressContainer").prepend('<div class="progress">' +
                 '<div id="pg-' + playerUsername + '" class="progress-bar" role="progressbar" aria-valuenow="' + progressbarValue + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + progressbarValue + '%;">' + playerUsername + '</div>' +
                 '</div>');
@@ -297,7 +301,7 @@ function setupSockets() {
         '</div>');
 
         // My progress bar.
-        var myProgressbarValue = 25 + 25 * playersList[myIndex].won;
+        var myProgressbarValue = 25 + progressBarIncrement * playersList[myIndex].won;
         $("#progressContainer").prepend('<div class="progress">' +
         '<div id="pg-' + myUsername + '" class="progress-bar" role="progressbar" aria-valuenow="' + myProgressbarValue + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + myProgressbarValue + '%;">' + myUsername + '</div>' +
         '</div>');
