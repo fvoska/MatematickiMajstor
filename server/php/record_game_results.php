@@ -39,7 +39,6 @@ $roomName = $_POST['roomName'];
 $q = "INSERT INTO room (name, finished, winnerID) VALUES ('" . $roomName . "','" . $timeFinished . "','" . $winnerId . "');";
 $room = mysql_query($q);
 $roomId = mysql_insert_id();
-echo $roomId;
 
 // Record room-player stats
 for ($i = 0; $i < $numPlayers; $i++)
