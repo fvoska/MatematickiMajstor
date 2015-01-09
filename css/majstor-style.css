@@ -7,18 +7,16 @@ body {
 #mainContainer {
     margin: auto;
     padding: 10px;
-    padding-top: 20px;
+	padding-top: 0px;
     /*width: 1300px;*/
     max-width: 1300px;
     width: 90%;
-    height: 600px;
     margin-top: 25px;
 }
 
 #panelLeftContainer {
     position: relative;
     float:left;
-    left: 20px;
     text-align: center;
     width: 200px;
     height: 550px;
@@ -28,7 +26,7 @@ body {
 #panelCenterContainer {
     position: relative;
     float: left;
-    left: 35px;
+    left: 10px;
     width: 700px;
     height: 550px;
 }
@@ -43,9 +41,9 @@ body {
 #panelRightContainer {
     position: relative;
     float: left;
-    left: 50px;
+    left: 20px;
     text-align: center;
-    width: 300px;
+    width: 275px;
     height: 550px;
     padding: 10px;
 }
@@ -123,7 +121,7 @@ body {
 
 .chatItem {
 position: relative;
-width: 240px;
+width: 233px;
 padding: 5px;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
@@ -163,7 +161,7 @@ top: 8px;
 
 .chatItemRed {
 position: relative;
-width: 240px;
+width: 233px;
 padding: 5px;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
