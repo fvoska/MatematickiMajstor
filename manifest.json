@@ -8,9 +8,9 @@
                "48": "img/math-master-48.png",
                "128": "img/math-master-128.png" },
     "app": {
-        "urls": ["http://fvoska.com/majstor-rassus"],
+        "urls": ["http://fiouch.com/majstor-rassus"],
         "launch": {
-            "web_url": "http://fvoska.com/majstor-rassus"
+            "web_url": "http://fiouch.com/majstor-rassus"
         }
     }
 }
