@@ -121,7 +121,7 @@ body {
 
 .chatItem {
 position: relative;
-width: 233px;
+width: 200px;
 padding: 5px;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
@@ -161,7 +161,7 @@ top: 8px;
 
 .chatItemRed {
 position: relative;
-width: 233px;
+width: 200px;
 padding: 5px;
 -webkit-border-radius: 10px;
 -moz-border-radius: 10px;
@@ -200,7 +200,7 @@ top: 8px;
 }
 .chatItemYellow {
     position: relative;
-    width: 240px;
+    width: 200px;
     padding: 5px;
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
