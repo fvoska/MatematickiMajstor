@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "Math Master",
+    "version": "1.0",
+
+    "description": "Show your Math skills!",
+    "icons": { "16": "img/math-master-16.png",
+               "48": "img/math-master-48.png",
+               "128": "img/math-master-128.png" },
+    "app": {
+        "urls": ["http://fvoska.com/majstor-rassus"],
+        "launch": {
+            "web_url": "http://fvoska.com/majstor-rassus"
+        }
+    }
+}
