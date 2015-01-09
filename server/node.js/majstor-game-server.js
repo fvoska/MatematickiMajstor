@@ -1,6 +1,7 @@
 /*
     TODO #1: Punish when leaving the room.
     TODO #2: Some security when posting results.
+    TODO #3: What happens if client answers later than serverTimeout - clientLimit?
 */
 
 // Game controller port.
@@ -34,8 +35,9 @@ for (var i = 0; i < process.argv.length; i++)
 // Task generator and solver
 var generator = require("./majstor-generator.js");
 var requiredRoundsToWin = 5;
-var timeLimit = 10;
+var timeLimit = 15;
 var timeLimitTimeout = null;
+var forceExit = false;
 
 // Create server
 var app = require("express")();
@@ -99,6 +101,13 @@ io.sockets.on("connection", function(socket) {
         // Update current user answer time.
         socket.answerStatus = result;
         socket.answerTime = time;
+
+        // Handle timeout.
+        if (result == "O") {
+            console.log("[" + socket.room + "] " + socket.username + " did not answer in time");
+            checkRoundResults(socket.room, false);
+            return;
+        }
 
         socket.totalTime += time;
         socket.totalAnswers += 1;
@@ -216,7 +225,7 @@ function checkRoundResults(roomId, timeout) {
     }
 
     var fastestPlayer = null;
-    var fastestTime = timeLimit; // This is maximum time allowed for solving - 20s
+    var fastestTime = timeLimit; // This is maximum time allowed for solving
     var numAnswered = 0;
 
     var players = findClientsSocketByRoomId(roomId);
@@ -236,10 +245,18 @@ function checkRoundResults(roomId, timeout) {
     }
 
     if (numAnswered == players.length || timeout == true) {
+        if (timeLimitTimeout != null) {
+            clearTimeout(timeLimitTimeout);
+        }
         var over = false;
         if (fastestPlayer != null) {
             // Round winner.
             console.log("[" + roomId + "] " + fastestPlayer.username + " won the round with time " + fastestTime + "s");
+            for (var i in players) {
+                player = players[i];
+                player.answerTime = -1;
+                player.answerStatus = "N";
+            }
             fastestPlayer.won += 1;
             if (fastestPlayer.won == requiredRoundsToWin) {
                 // Game winner as well.
@@ -257,12 +274,34 @@ function checkRoundResults(roomId, timeout) {
             io.sockets["in"](roomId).emit("roundResults", fastestPlayer.username, fastestTime, over);
 
             if (over) {
-                shutDownRoom(roomId, true);
+                if (forceExit) {
+                    // Close room after game is over
+                    shutDownRoom(roomId, true);
+                }
+                else {
+                    // Leave players in room, just reset ready states.
+                    for (var i in players) {
+                        player = players[i];
+                        player.won = 0;
+                        player.totalTime = 0;
+                        player.totalAnswers = 0;
+                        player.answerTime = -1;
+                        player.answerStatus = "N";
+                        player.ready = false;
+                    }
+
+                    // Refresh users list.
+                    var usersList = findUsernamesByRoomId(roomId);
+                    for (var i in players) {
+                        player = players[i];
+                        player.emit("updateUsers", usersList);
+                    }
+                }
             }
         }
         else {
             // Noone answered in time.
-            console.log("[" + roomId + "] " + "Noone answered faster than " + timeLimit + "s");
+            console.log("[" + roomId + "] " + "Noone answered faster than client time limit or server timeout limit(" + timeLimit + "s)");
             io.sockets["in"](roomId).emit("roundResults", null, -1, false);
         }
 
@@ -383,6 +422,7 @@ function sendTask(toRoom) {
                 clearTimeout(timeLimitTimeout);
             }
             timeLimitTimeout = setTimeout(function() {
+                console.log("TIMEOUT");
                 checkRoundResults(toRoom, true);
             }, timeLimit * 1000);
         }
@@ -392,8 +432,9 @@ function sendTask(toRoom) {
 var request = require('request');
 var URLGameResultPost = "http://localhost/MatematickiMajstor/server/php/record_game_results.php";
 function postResults(playersIds, winnerId, roomName) {
+    console.log("POST: " + '{ "players": ' + playersIds + ', "winner": ' + winnerId + ', "roomName": ' + roomName + ' }');
     request.post({ url: URLGameResultPost, form: { "players": playersIds, "winner": winnerId, "roomName": roomName }}, function(err,httpResponse,body) {
-        console.log(body);
+        console.log("RESPONSE: " + body);
     });
 }
 

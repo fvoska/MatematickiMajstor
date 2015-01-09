@@ -8,6 +8,8 @@ var socket;
 var colors = [];
 var requiredRoundsToWin = null;
 var progressBarIncrement = null;
+var answerTimeout = null;
+var timeoutLimit = 8;
 
 $(document).ready(function() {
     $(".statusLoggedIn").hide();
@@ -193,6 +195,16 @@ function setupSockets() {
             $(".suggestion").animate({"opacity": "1"}, 250);
         });
 
+        // Disable answering after 8s.
+        if (answerTimeout != null) {
+            clearTimeout(answerTimeout);
+        }
+        answerTimeout = setTimeout(function() {
+            $(".suggestion").css({"background-color": "grey"});
+            $(".suggestion").prop("disabled", true);
+            socket.emit("taskAnswered", "O", -1);
+        }, timeoutLimit * 1000);
+
         // Remember correct answer.
         correctAnswer = taskJSON.result;
 
@@ -222,8 +234,18 @@ function setupSockets() {
                 closable: false,
                 draggable: true,
                 buttons: [{
-                    label: "Go to Lobby",
+                    label: "Keep playing in this room",
                     cssClass: "btn-primary",
+                    action: function(dialogItself){
+                        dialogItself.close();
+                        $("#task").animate({"opacity": "0"}, 250);
+                        $(".suggestion").animate({"opacity": "0"}, 250);
+                        $(".suggestion").prop("disabled", true);
+                    }
+                },
+                {
+                    label: "Go to Lobby",
+                    cssClass: "btn-default",
                     action: function(dialogItself){
                         dialogItself.close();
                         switchRoom("Lobby");
@@ -586,6 +608,11 @@ $(function() {
 
     // Handle clicks on 4 suggestion boxes.
     $(".suggestion").click(function() {
+        // Clear timeout.
+        if (answerTimeout != null) {
+            clearTimeout(answerTimeout);
+        }
+
         // Disable clicked button.
         $(this).prop("disabled", true);
 
