@@ -2,7 +2,7 @@
 
 include 'db_connection.php';
 
-$players = mysql_query('SELECT person.username, ROUND(SUM(roomHistory.time) / SUM(roomHistory.answers), 2) AS avgTime FROM roomHistory INNER JOIN person ON roomHistory.personID = person.id GROUP BY roomHistory.personID ORDER BY avgTime ASC;');
+$players = mysql_query('SELECT person.username, ROUND(SUM(roomHistory.time) / SUM(roomHistory.answers), 2) AS avgTime FROM roomHistory INNER JOIN person ON roomHistory.personID = person.id GROUP BY roomHistory.personID ORDER BY avgTime ASC LIMIT 5;');
 
 $numRows = mysql_num_rows($players);
 $counter = 1;
