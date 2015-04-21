@@ -1,7 +1,7 @@
 Matematički Majstor
 ===================
 
-For course [Distibuted Systems](http://www.fer.unizg.hr/en/course/dissys Distributed Systems) at [Faculty of Electrical Engineering and Computing](http://www.fer.unizg.hr/FER).
+For course [Distibuted Systems](http://www.fer.unizg.hr/en/course/dissys) at [Faculty of Electrical Engineering and Computing](http://www.fer.unizg.hr).
 
 **Students**:
 - Matija Cerovec
